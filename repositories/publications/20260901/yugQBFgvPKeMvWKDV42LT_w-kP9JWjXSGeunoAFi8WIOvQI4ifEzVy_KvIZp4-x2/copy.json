@@ -1,0 +1,226 @@
+{
+  "sourceDate": "20260901",
+  "intro": "本期从 221 篇可编辑候选中保留 20 篇。关注点集中在工具调用与工作记忆、可审计评测，以及搜索、摘要和技能生命周期带来的安全边界。精选论文优先呈现具有可复核实验或明确风险度量的工作。",
+  "papers": [
+    {
+      "arxivId": "2608.28612",
+      "title": "研究速览：InternReviewer & InternAdvocate: Objective Reward and Evaluation for Agentic Reinforcement Learning in Peer Review and Rebuttal",
+      "summary": "将学术审稿与回复建模为带检索工具的智能体强化学习，并以可验证引用约束奖励。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "基于 OpenReview 审稿—回复数据、arXiv 检索和分解式客观奖励训练两个专用智能体。",
+      "innovation": "把引用核验和结构合规纳入可分解奖励，而非只依赖 LLM 裁判。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文报告推理深度和引用准确性提升；对真实审稿质量的外部验证仍有限。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.28641",
+      "title": "研究速览：Terminal-Bench-LILT: Multilingual Agentic Coding Benchmark Grounded in Language, Region, and Culture",
+      "summary": "构建覆盖十种语言的 300 道真实编程任务，测量编码智能体的多语能力缺口。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "由母语程序员编写并经多阶段质检，对六个前沿模型进行评测。",
+      "innovation": "把语言、区域与文化相关的软件问题纳入终端编码任务。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "最强模型通过率为 63.1%，且表现与通用编码榜单不一致。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.28725",
+      "title": "研究速览：Beyond the Answer Key: Robustness Evaluation of Large Language Models for Step-Level Mathematical Verification",
+      "summary": "评测 LLM 对非标准但正确的数学推理链进行逐步核验的稳健性。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "在线性方程受控基准中同时判断答案、步骤正确性和首个错误步骤。",
+      "innovation": "区分规范解与逻辑等价扰动解，直接暴露验证器的形式依赖。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "若干开源模型在有效扰动链上的误拒率达到 75.6%–85.3%。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29028",
+      "title": "研究速览：Facts Without Rules: Boundary Metadata Collapse in Multi-Agent LLM Handoffs",
+      "summary": "指出多智能体交接摘要会保留业务事实却丢失使用边界，从而造成隐私泄漏。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "在受控协作测试床上测量边界标记与业务事实在不同摘要预算下的存活率。",
+      "innovation": "将摘要压缩中的边界元数据丢失定义为可量化的 summary collapse。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "25 词预算下边界标记存活率约降至 0.57，而业务事实仍接近上限。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29128",
+      "title": "研究速览：APIFlow-Bench: Measuring Whether Agents Survive Long, Dependent API Workflows",
+      "summary": "提出可审计的长程 REST API 工作流基准，拆分工具智能体的工程能力。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "程序生成 API 世界，并以自检、oracle 与对抗审计保障题目和评分器有效。",
+      "innovation": "用真实调用链和数据流溯源衡量成功，而非仅记录任务是否完成。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文披露发现并修复六个评分器漏洞；基准更适合定位生产式失败。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29228",
+      "title": "研究速览：Localizing Emergent Failures in Agentic AI: Recovering Minimal Repair Families via Counterfactual Replay",
+      "summary": "为多智能体失败提出最小修复集合恢复问题，并定位共同必要的修复事件。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "从执行依赖图切片，构造可行候选并以反事实回放验证。",
+      "innovation": "恢复全部包含最小的修复族，避免把协同故障误归因于单点。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "在受控基准和四智能体试验中报告精确匹配，并减少约一半回放调用。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29305",
+      "title": "研究速览：Learning Simple Test-Time Environments for LLM Web Agents",
+      "summary": "让网页智能体在推理时分解环境观测，并从简单子环境获得可组合经验。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "以无标签的测试时环境分解在试验步骤中调整行为。",
+      "innovation": "把环境结构而非仅任务轨迹作为测试时适应对象。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文在合成与真实基准上报告复杂环境中的适应收益；泛化边界仍依赖任务设置。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29357",
+      "title": "研究速览：LiteSearch-VL: Small Multimodal Search Agents via Trajectory Distillation and Synthetic Step-DPO",
+      "summary": "研究将视觉搜索智能体轨迹蒸馏到小型视觉语言模型的有效成分。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "以公开轨迹、LoRA 和针对局部失败的合成偏好进行逐步 DPO。",
+      "innovation": "把蒸馏收益分解为工具行为学习，而非笼统的准确率提升。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "在多项视觉问答基准上评估 12,400 条 rollout；结果强调行为转移。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29363",
+      "title": "研究速览：TRACER: Per-Tool Context Retention for LLM Agents via Consequence-Attributed Reinforcement Learning",
+      "summary": "为企业数据智能体按工具输出的后果决定上下文保留比例。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "用轻量 REINFORCE 策略联合优化任务成功、token 消耗和重调工具代价。",
+      "innovation": "将压缩后的工具重调用后果显式纳入上下文压缩目标。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文报告在长上下文工具链中减少无效压缩带来的额外执行；需关注结果的业务任务可迁移性。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29575",
+      "title": "研究速览：SemTrace: Source-Grounded Semantic Signatures for Tracing LLM Exposure to Protected Documents",
+      "summary": "提出从受保护文档事实命题构造语义签名，以检测生成文本是否受特定副本影响。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "在固定评审槽中植入可验证事实选择，并由冻结 NLI 模型解码。",
+      "innovation": "使用来源支持的语义证据，而非词面水印或模型内部概率偏置。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文面向指定副本泄露检测；对复杂提示攻击与不同任务的稳健性仍需核验。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29622",
+      "title": "研究速览：AgenticRag-R1: Agentic Reinforcement Learning with Stack Memory for Multi-Step Reasoning, Retrieval and Memorizing",
+      "summary": "通过记忆栈和细粒度动作奖励统一多步检索、推理与记忆。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "使用层级动作感知奖励及信息感知的轨迹拒绝机制训练 agentic RAG。",
+      "innovation": "将检索与记忆的信用分配推进到动作层面。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文称在多跳、开放域和智能体推理基准上优于强基线；需结合公开复现判断幅度。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29831",
+      "title": "研究速览：A^2Agent: Action-Aware Reinforcement Learning for Repository-Level Code Localization Agents",
+      "summary": "以动作级强化学习提升仓库级代码定位智能体的发现与提交能力。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "为发现和确认代码区域设置逐回合奖励，并做按探索上下文分组的优势估计。",
+      "innovation": "将稀疏轨迹奖励细化为可归因的单步信号。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "在 SWE-Bench Verified 与 Pro 上报告平均 F1 提升，并公开代码。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.29834",
+      "title": "研究速览：You Know What I Mean: A Benchmark for Agentic Conversational Reference Grounding",
+      "summary": "定义会话指代落地任务：智能体须借助工作区工具解析对话中的隐含外部对象。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "用 GitHub 开发者聊天片段构造 400 个有唯一目标的工具使用基准。",
+      "innovation": "把语义、时间和工作区证据结合为可测量的智能体能力。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "提供 RepoRef 基准；规模适中，结论应结合更多工作区类型验证。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.30147",
+      "title": "研究速览：CAST: Critique-Aware Supervision for Training Reliable Long-Horizon Tool-Calling Agents",
+      "summary": "从失败轨迹生成动作级批评理由，用于训练长程工具调用智能体的可靠性。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "把稀疏任务结果转为结构化批评监督，再用于策略优化。",
+      "innovation": "将可执行错误的解释作为训练信号，而不只优化任务成败。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文围绕跨步骤、跨试次的不可逆失败评估；真实生产部署的覆盖范围仍有限。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.30303",
+      "title": "研究速览：Lazy Grounding: Attacking Search Agents with Factual Evidence",
+      "summary": "揭示搜索智能体会被内容真实但针对邻近问题的干扰证据带偏。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "向检索语料注入支持改写问题的邻近证据，测试回答采纳偏差。",
+      "innovation": "将检索安全从虚假信息扩展到事实正确的误导性上下文。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "12 个模型—基准组合平均准确率下降 5.9 点，最高下降 17.3 点。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.30362",
+      "title": "研究速览：Will the User Ever Know? Covert Indirect Prompt Injection Attacks on Tool-Using LLM Agents",
+      "summary": "将间接提示注入区分为用户可察觉与不可察觉的成功，提出隐蔽成功率。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "分析工具调用智能体被注入后的轨迹与最终回复，分离 CSR 和 OSR。",
+      "innovation": "以用户最终是否能发现越权行为补充传统攻击成功率。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文显示结束行为会影响攻击的可见性；该指标有助于更贴近用户风险。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.30429",
+      "title": "研究速览：EvoSkill Injection: Red-Teaming Autonomous Skill Generation and Evolution in Self-Evolving Agents",
+      "summary": "针对自演化智能体的技能生成、存储与复用链路提出技能注入威胁模型。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "构建迭代生成、升级和强化交互的红队框架与恶意轨迹基准。",
+      "innovation": "把安全边界从单轮提示扩展到长期技能生命周期。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文提供 EvoSkillBench；攻击覆盖与现实技能生态的匹配仍需持续检验。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.30661",
+      "title": "研究速览：SwarmBench: Can Large Language Models Act as Agent Swarm Orchestrators?",
+      "summary": "评测模型动态编排智能体群的准确率、效率、成本与过程质量。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "以 SwarmBench 建立多维评测，并用经验提炼与回放改进编排。",
+      "innovation": "将编排过程质量纳入 agent swarm 能力评价。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文报告模型间存在明显编排差异，并给出 SwarmExp 改进结果。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.31057",
+      "title": "研究速览：Measure Before You Manage: Evaluating Agent Working Memory in Coding Agents",
+      "summary": "分析编码智能体工作记忆中不同对象的保留与压缩差异。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "在 55 条归档轨迹上比较对象感知压缩和检索策略。",
+      "innovation": "将工作记忆按指令、工件和工具输出等语义角色建模。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "发现校准收益未必迁移到留出任务，相同 token 预算也不等于相同服务成本。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    },
+    {
+      "arxivId": "2608.31076",
+      "title": "研究速览：Learning to Evaluate Before Improving: Automatic Rubric Induction for Automatic Research Agents",
+      "summary": "在科研智能体执行前自动归纳可执行评分量规，再用于指导、核验与迭代修订。",
+      "critique": "问题与方法同当前 Agent/LLM 主线直接相关；结论以论文报告的受控评测为依据，跨任务或真实部署的外推应保持谨慎。",
+      "method": "将欠定义指令拆为科学目标，并结合文献和任务可见数据生成可验证准则。",
+      "innovation": "把研究任务的隐含成功条件转为执行期可检查的量规。",
+      "training": "训练与数据设置以论文正文披露为准；本期未确认的细节不作推断。",
+      "results": "论文说明该框架覆盖检索、分析、实验与报告；开放式科研任务的外部评价仍关键。",
+      "recommendation": "为相关方向提供了可复核的方法、评测或风险证据，适合沿该主题继续核对原文与代码。"
+    }
+  ]
+}

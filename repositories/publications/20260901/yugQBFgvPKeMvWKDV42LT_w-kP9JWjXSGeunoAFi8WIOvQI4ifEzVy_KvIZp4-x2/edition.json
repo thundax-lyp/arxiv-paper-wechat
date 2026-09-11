@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "sourceDate": "20260901",
+  "builtAt": "2026-09-11T09:48:17.719Z",
+  "copyPath": "copy.json",
+  "coverPath": "cover.png",
+  "coverSha256": "e2702d4a4a989e6659335732c8ba38a0cc6d379292c112fe45282006ec595e00",
+  "articles": [
+    {
+      "order": 1,
+      "kind": "featured",
+      "title": "arXiv Agent 与大模型研究简报｜2026-09-01｜精选",
+      "path": "articles/01-featured.md",
+      "paperIds": [
+        "2608.29028",
+        "2608.30303",
+        "2608.28641",
+        "2608.29128"
+      ],
+      "sha256": "c74fdbe836a6f5b49d1360bf15f77eb873fd263e2f9eb8a5670d0f05e00d828f",
+      "renderedCharacters": 23711
+    },
+    {
+      "order": 2,
+      "kind": "overview",
+      "title": "arXiv Agent 与大模型研究简报｜2026-09-01｜论文全览",
+      "path": "articles/02-overview.md",
+      "paperIds": [
+        "2608.29831",
+        "2608.31057",
+        "2608.29363",
+        "2608.31076",
+        "2608.29305",
+        "2608.29622",
+        "2608.30661",
+        "2608.28612",
+        "2608.29357",
+        "2608.30147",
+        "2608.29028",
+        "2608.30303",
+        "2608.28641",
+        "2608.29128",
+        "2608.30362",
+        "2608.28725",
+        "2608.29228",
+        "2608.30429",
+        "2608.29575",
+        "2608.29834"
+      ],
+      "sha256": "7e039a83c1e8365efcd15630d8015091861c45c708365c8776b0937ad97b4769",
+      "renderedCharacters": 104888
+    }
+  ],
+  "fingerprint": "bce233f1e1c7e2062ff01fbf8b806b0fa10db21d2a4c7804c6a5e760cba4104b",
+  "measuredAt": "2026-09-11T09:48:21.884Z"
+}
