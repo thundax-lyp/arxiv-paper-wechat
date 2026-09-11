@@ -84,17 +84,17 @@ export function publishEdition(config: AppConfig, paths: DayPaths, wechatSkillDi
   if (options.remote) args.push("--remote");
   if (options.dryRun) args.push("--dry-run");
   if (options.dryRun) {
-    const result = spawnSync("npx", ["-y", "bun", ...args], { encoding: "utf8", cwd: dirname(primary) });
+    const result = spawnSync("npx", ["-y", "bun", ...args], { encoding: "utf8", cwd: config.root });
     if (result.status !== 0) throw new Error(result.stderr.trim() || "WeChat dry-run failed");
     return { dryRun: true, publisher: parsePublisherResult(result.stdout) };
   }
   const now = new Date().toISOString();
   const transaction: PublicationTransaction = { schemaVersion: 1, sourceDate: paths.key, fingerprint: edition.fingerprint, status: "publishing", startedAt: now, updatedAt: now };
   atomicJson(paths.transaction, transaction);
-  const result = spawnSync("npx", ["-y", "bun", ...args], { encoding: "utf8", cwd: dirname(primary) });
+  const result = spawnSync("npx", ["-y", "bun", ...args], { encoding: "utf8", cwd: config.root });
   if (result.status !== 0) {
     transaction.error = result.stderr.trim() || `publisher exited ${result.status}`;
-    const knownPreDraftFailure = /40164|40125|access token error|no (wechat )?credentials|appsecret/i.test(transaction.error);
+    const knownPreDraftFailure = /40164|40125|access token error|missing wechat_app_id|missing wechat_app_secret|no (wechat )?credentials|appsecret/i.test(transaction.error);
     transaction.status = knownPreDraftFailure ? "failed" : "uncertain";
     transaction.updatedAt = new Date().toISOString();
     atomicJson(paths.transaction, transaction);
