@@ -1,0 +1,6 @@
+interface:
+  display_name: "Cleanup Paper PDFs"
+  short_description: "人工清理超过保留期的本地论文 PDF 缓存"
+  default_prompt: "Use $cleanup-paper-pdfs to preview old local paper PDFs that are eligible for cleanup."
+policy:
+  allow_implicit_invocation: false
