@@ -1,0 +1,18 @@
+{
+  "paperRepository": "repositories/papers",
+  "publicationRepository": "repositories/publications",
+  "workspaceDirectory": ".work",
+  "startDate": "20260622",
+  "categories": ["cs.AI", "cs.CL", "cs.MA"],
+  "listPageSize": 50,
+  "downloadConcurrency": 4,
+  "convertConcurrency": 4,
+  "maxRetries": 3,
+  "retryDelayMs": 2000,
+  "pdfRetentionDays": 30,
+  "wechat": {
+    "targetRenderedCharacters": 104888,
+    "maxRenderedCharacters": 104888,
+    "maxArticlesPerEdition": 2
+  }
+}

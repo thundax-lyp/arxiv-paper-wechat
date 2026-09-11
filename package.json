@@ -1,0 +1,23 @@
+{
+  "name": "arxiv-paper-wechat",
+  "version": "0.1.0-alpha.1",
+  "description": "Build and publish reviewed Agent/LLM arXiv digests to WeChat",
+  "type": "module",
+  "bin": {
+    "arxiv-paper-wechat": ".agents/skills/arxiv-paper-wechat/scripts/cli.ts"
+  },
+  "scripts": {
+    "cli": "npx -y bun .agents/skills/arxiv-paper-wechat/scripts/cli.ts",
+    "test": "npx -y bun test ./.agents/skills/arxiv-paper-wechat/scripts/*.test.ts ./.agents/skills/cleanup-paper-pdfs/scripts/cleanup.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thundax-lyp/arxiv-paper-wechat.git"
+  },
+  "author": "Thundax <thundax@qq.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/thundax-lyp/arxiv-paper-wechat/issues"
+  },
+  "homepage": "https://github.com/thundax-lyp/arxiv-paper-wechat#readme"
+}

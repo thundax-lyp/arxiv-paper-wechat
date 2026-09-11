@@ -1,0 +1,6 @@
+interface:
+  display_name: "arXiv Agent & LLM Research Brief"
+  short_description: "Curate arXiv papers into a WeChat research draft"
+  default_prompt: "Use $arxiv-paper-wechat to generate the next research brief."
+policy:
+  allow_implicit_invocation: false
