@@ -3,7 +3,7 @@ name: arxiv-paper-wechat
 description: "Generate an arXiv Agent and LLM research brief by collecting cs.AI, cs.CL, and cs.MA papers, reviewing local Markdown, building capacity-safe articles, and optionally creating a WeChat draft."
 license: Apache-2.0
 metadata:
-  version: 3.5.2
+  version: 3.5.3
   author: Thundax
 ---
 
@@ -33,7 +33,7 @@ npx -y bun "$CLI" publication next-date
 4. **完整阅读 [references/editorial-policy.md](references/editorial-policy.md)**，并以它作为当期筛选、固定 taxonomy 和评分的唯一质量口径。随后串行阅读已下载候选的 `repositories/papers/yyyyMMdd/markdown/*.md`，一次性生成完整编辑结果，不并发调用 LLM。
 5. 将候选 JSON 写到仓库外临时文件，再执行 `editorial commit --date ... --input ...`；根据错误补齐后运行 `editorial validate`。
 6. **完整阅读 [references/publication-policy.md](references/publication-policy.md)**，按其稿件结构和文案标准生成 `.work/yyyyMMdd/copy.json`。发布文案可以逐字段语义缩减，但不得改写或删减 `editorial.json`；精选只取 `>=7` 分的前 4 篇，不足时不得补位。
-7. 运行 `cover prepare --date ...`，读取生成的 `cover-brief.json`，加载并遵循 Codex `$imagegen` Skill，使用默认内置图片工具生成一张封面。把选定成品复制到 brief 的 `outputPath`；不要创建本地图片 API wrapper，也不要使用需要 `OPENAI_API_KEY` 的 CLI fallback。
+7. 运行 `cover prepare --date ...`，读取生成的 `cover-brief.json`，加载并遵循 Codex `$imagegen` Skill，使用默认内置图片工具生成一张封面。把选定成品复制到 brief 的 `outputPath`；不要创建本地图片 API wrapper，也不要使用需要 `OPENAI_API_KEY` 的 CLI fallback。封面采用小清新的研究编辑插画：以暖白纸张、低饱和薄荷绿/天蓝/浅黄和柔和晨光为基调；把精选论文的实际主题转成少量可读的视觉隐喻，例如工具调用用模块与连线、检索与核验用资料卡/放大镜、记忆用归档卡片、多智能体协作用松散协作节点。构图保持留白、纸张或水粉质感、克制的文具感，避免深色赛博空间、发光宇宙球、密集线路和与论文无关的通用科技图标。仍不得含文字、字母、数字、logo、水印、界面截图、真实人物或手部。
 8. 运行 `cover validate --date ...`。图片必须无文字、数字、logo、水印、界面截图和真实人物，且通过 PNG/JPEG、最小尺寸与 21:9 比例硬校验；失败时重新生成或裁切后再验证。
 9. 依次运行 `edition build`、`edition measure`、`edition validate`。若超限，按报告语义缩减对应论文的 `copy.json` 内容并重新执行三条命令；禁止字符串硬截断。
 10. 用户只要求生成时到此停止。用户要求推送草稿箱时，运行 `edition publish`。不得正式群发。
