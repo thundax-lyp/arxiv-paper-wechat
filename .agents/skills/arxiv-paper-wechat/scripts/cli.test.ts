@@ -9,7 +9,7 @@ import {
   commitScreening, crawl, downloadAll, downloadPaper, PaperList, paperFileStem, parseArxivPage, parseCatchupPage, validateScreening,
 } from "./papers";
 import { prepareCover, validateCover } from "./cover";
-import { adoptPublishedDraft } from "./publication";
+import { adoptPublishedDraft, archivePublication } from "./publication";
 import { workflowStatus } from "./workflow";
 
 const roots: string[] = [];
@@ -240,4 +240,18 @@ test("a known externally-created draft can be adopted only after edition validat
   expect(result).toMatchObject({ status: "archived", mediaId: "draft-media-id" });
   expect(existsSync(join(config.publicationRepository, "20260911", "draft-media-id", "receipt.json"))).toBe(true);
   expect(() => adoptPublishedDraft(config, paths, "another-id")).toThrow("already exists");
+});
+
+test("publication archives keep multiple drafts from the same source date", () => {
+  const { config } = fixture();
+  const paths = prepareDay(config);
+  buildEdition(config, paths);
+  measureEdition(paths, join(import.meta.dir, "..", "..", "baoyu-post-to-wechat"));
+  validateEdition(config, paths);
+  const first = { schemaVersion: 1 as const, sourceDate: "20260911", fingerprint: "first", status: "draft_created" as const, startedAt: "2026-09-11T00:00:00Z", updatedAt: "2026-09-11T00:00:00Z", mediaId: "draft-one" };
+  const second = { ...first, fingerprint: "second", mediaId: "draft-two" };
+  archivePublication(config, paths, first);
+  archivePublication(config, paths, second);
+  expect(existsSync(join(config.publicationRepository, "20260911", "draft-one", "receipt.json"))).toBe(true);
+  expect(existsSync(join(config.publicationRepository, "20260911", "draft-two", "receipt.json"))).toBe(true);
 });

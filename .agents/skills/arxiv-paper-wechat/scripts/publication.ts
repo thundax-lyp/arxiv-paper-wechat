@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { AppConfig, DayPaths, atomicJson, readJson } from "./core";
@@ -30,11 +30,33 @@ function parsePublisherResult(stdout: string): { media_id?: string; success?: bo
   catch { throw new Error(`Publisher did not return valid JSON: ${stdout.slice(-500)}`); }
 }
 
-function archive(config: AppConfig, paths: DayPaths, transaction: PublicationTransaction): string {
+function archivedReceipts(config: AppConfig, sourceDate: string): string[] {
+  const day = join(config.publicationRepository, sourceDate);
+  if (!existsSync(day)) return [];
+  return readdirSync(day, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => join(day, entry.name, "receipt.json"))
+    .filter(existsSync)
+    .sort();
+}
+
+/**
+ * Persist one WeChat draft under its media ID without replacing other drafts from
+ * the same source date.  Multiple drafts are legitimate retries/revisions.
+ */
+export function archivePublication(config: AppConfig, paths: DayPaths, transaction: PublicationTransaction): string {
   if (!transaction.mediaId) throw new Error("Cannot archive without mediaId");
   const edition = readJson<EditionDocument>(paths.edition);
   const safeMediaId = transaction.mediaId.replace(/[^a-zA-Z0-9._-]/g, "_");
   const target = join(config.publicationRepository, paths.key, safeMediaId);
+  const previousReceipts = archivedReceipts(config, paths.key);
+  const targetReceipt = join(target, "receipt.json");
+  if (existsSync(targetReceipt)) {
+    const previous = readJson<Pick<PublicationTransaction, "mediaId" | "fingerprint">>(targetReceipt);
+    if (previous.mediaId !== transaction.mediaId || previous.fingerprint !== transaction.fingerprint) {
+      throw new Error(`Refusing to overwrite archived draft at ${target}`);
+    }
+  }
   mkdirSync(target, { recursive: true });
   cpSync(paths.edition, join(target, "edition.json"));
   cpSync(paths.copy, join(target, "copy.json"));
@@ -56,6 +78,8 @@ function archive(config: AppConfig, paths: DayPaths, transaction: PublicationTra
   transaction.status = "archived";
   transaction.updatedAt = new Date().toISOString();
   atomicJson(paths.transaction, transaction);
+  const missing = previousReceipts.filter((receipt) => !existsSync(receipt));
+  if (missing.length) throw new Error(`Existing publication archives disappeared during archival: ${missing.join(", ")}`);
   return target;
 }
 
@@ -116,7 +140,7 @@ export function publishEdition(config: AppConfig, paths: DayPaths, wechatSkillDi
   transaction.updatedAt = transaction.draftCreatedAt;
   delete transaction.error;
   atomicJson(paths.transaction, transaction);
-  const archivePath = archive(config, paths, transaction);
+  const archivePath = archivePublication(config, paths, transaction);
   return { status: "draft_created", mediaId: response.media_id, archivePath };
 }
 
@@ -129,7 +153,7 @@ export function reconcilePublication(config: AppConfig, paths: DayPaths, mediaId
   transaction.status = "draft_created";
   transaction.updatedAt = new Date().toISOString();
   atomicJson(paths.transaction, transaction);
-  const archivePath = archive(config, paths, transaction);
+  const archivePath = archivePublication(config, paths, transaction);
   return { status: "archived", mediaId: transaction.mediaId, archivePath };
 }
 
@@ -150,7 +174,7 @@ export function adoptPublishedDraft(config: AppConfig, paths: DayPaths, mediaId:
     draftCreatedAt: now,
   };
   atomicJson(paths.transaction, transaction);
-  return { status: "archived", mediaId: transaction.mediaId, archivePath: archive(config, paths, transaction) };
+  return { status: "archived", mediaId: transaction.mediaId, archivePath: archivePublication(config, paths, transaction) };
 }
 
 export function listPublications(config: AppConfig): Array<Record<string, unknown>> {
