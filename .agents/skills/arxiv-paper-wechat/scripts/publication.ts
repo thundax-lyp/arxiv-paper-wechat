@@ -102,7 +102,7 @@ export function publishEdition(config: AppConfig, paths: DayPaths, wechatSkillDi
   }
   const manifest = publisherManifest(paths, edition);
   const primary = resolve(paths.workDir, edition.articles[0].path);
-  const args = [publisher, primary, "--cover", cover, "--multi-manifest", manifest, "--author", options.author ?? "Thundax", "--theme", options.theme ?? "default"];
+  const args = [publisher, primary, "--cover", cover, "--multi-manifest", manifest, "--author", options.author ?? "Thundax", "--theme", options.theme ?? "default", "--no-cite"];
   if (options.color) args.push("--color", options.color);
   if (options.account) args.push("--account", options.account);
   if (options.remote) args.push("--remote");

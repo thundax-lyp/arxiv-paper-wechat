@@ -4,7 +4,7 @@ import { AppConfig, DayPaths, readJson } from "./core";
 import { status, PaperList, validateScreening } from "./papers";
 import { EditorialDocument, validateEditorial } from "./editorial";
 import { requireValidatedCover } from "./cover";
-import { EditionDocument, loadCopy, validateEdition } from "./edition";
+import { EditionDocument, loadCopy, selectForPublication, validateEdition } from "./edition";
 
 /** Read-only inspection. Missing work is actionable, not permission to stop. */
 export function workflowStatus(config: AppConfig, paths: DayPaths) {
@@ -30,7 +30,8 @@ export function workflowStatus(config: AppConfig, paths: DayPaths) {
   check("editorial", "Read candidate Markdown, then editorial commit / editorial validate", () => { validateEditorial(paths); });
   check("copy", "Write copy.json, then edition build", () => {
     const editorial = readJson<EditorialDocument>(paths.editorial);
-    loadCopy(paths, editorial.papers.filter(paper => paper.decision === "keep"));
+    const kept = editorial.papers.filter(paper => paper.decision === "keep");
+    loadCopy(paths, kept, selectForPublication(kept, config.wechat.maxPapersPerEdition));
   });
   check("cover", "cover prepare / imagegen / cover validate", () => {
     const edition = existsSync(paths.pendingEdition) ? readJson<EditionDocument>(paths.pendingEdition) : undefined;

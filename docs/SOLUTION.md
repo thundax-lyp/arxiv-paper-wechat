@@ -73,7 +73,7 @@ repositories/
 人工唤起 Skill
   → Skill 解析候选日期并按需推进
   → CLI crawl 精确日期的全部版面
-  → LLM 仅按标题粗筛并把下载/跳过原因写入 list
+  → LLM 结合标题与摘要排序，取相关度前 60 篇下载，失败按序递补
   → download 并发下载候选 PDF
   → convert 并发抓取官方 HTML 并生成 Markdown
   → Skill 串行生成 editorial.json
@@ -133,11 +133,11 @@ arxiv-paper-wechat edition publish --date 20260911
 - 列表包含日期、版面、抓取时间、论文 ID、版本、标题、作者、摘要、分类及 PDF URL。
 - 旧式 arXiv ID 在 JSON 中保持原值，例如 `cs/0609111`；仅文件名安全编码为 `cs__0609111`。
 
-## 标题粗筛
+## 标题与摘要粗筛
 
-抓取完成后、下载前，LLM 只读取 `list.json` 的标题，对每篇论文给出 `download` 或 `skip` 与具体原因；结果经 `screening commit` 原子写回 `list.json`。该阶段的目标是排除标题已明确不属于 Agent/LLM 范围的论文，降低 PDF 处理量；标题不明确时一律下载，不做正式 taxonomy、评分或评价。
+抓取完成后、下载前，LLM 读取 `list.json` 的标题和摘要，对全部论文给出相关性判断、具体原因及相关候选的唯一 `relevanceRank`。CLI 仅下载按相关度排序的前 60 篇；每篇有限重试仍失败时记录 `downloadError`，原子更新列表并从后续候补递补，直到成功候选达到 60 篇或候补耗尽。摘要缺失时先修复列表，不回退到只看标题。相关性由 LLM 判断，不使用关键词规则替代；此阶段不做正式 taxonomy 和质量评分。旧下载文件保留，只有当前排名入选的候选进入转换。
 
-下载、转换和正式编辑都要求粗筛覆盖当天完整列表，并只处理 `download` 候选。`skip` 原因永久保留在列表中，作为未下载的审计记录。规范见 [标题粗筛规范](../.agents/skills/arxiv-paper-wechat/references/initial-screening-policy.md)。
+下载、转换和正式编辑都要求粗筛覆盖当天完整列表，并只处理排序后最终入选的最多 60 篇候选。`skip` 原因永久保留在列表中，作为未下载的审计记录。规范见 [标题与摘要粗筛规范](../.agents/skills/arxiv-paper-wechat/references/initial-screening-policy.md)。
 
 ## PDF 下载与 Markdown 转换
 
@@ -151,7 +151,7 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
 
 ## 编辑整理
 
-论文全部转换后，主 Skill 串行读取当天 Markdown，一次性完成筛选、批改、标签、方向和评分，不设计多 LLM 并发或可续作的评审任务系统。
+论文全部转换后，主 Skill 串行读取当天 Markdown，一次性完成筛选、批改、标签、方向和评分，按重要性最多保留 40 篇，不设计多 LLM 并发或可续作的评审任务系统。
 
 过滤范围、固定 taxonomy、评分锚点与阅读证据要求固化在 [编辑质量规范](../.agents/skills/arxiv-paper-wechat/references/editorial-policy.md)，它是编辑判断的唯一质量口径。主 Skill 每期开始编辑前必须完整读取；流程和 CLI 重构不得隐式改变该规范。
 
@@ -166,9 +166,9 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
 
 完整 `editorial.json` 不受公众号字数限制影响。发布文案单独保存到 `.work/yyyyMMdd/copy.json`，LLM 可以根据代码给出的预算和超限报告进行语义缩减，但不得修改完整编辑结果。
 
-`edition build` 按方向、评分和 arXiv ID 稳定排序，先生成精选主稿，再将其余论文按方向和容量组织成多篇文章。全览使用保守源长度自动分篇，`edition measure` 必须通过真实微信公众号渲染器逐篇判断，硬上限为 100,000 字符。单篇论文是不可拆分的内容块。脚本不得从字符串中间硬截断；单个内容块超限时必须交给 Skill 缩减后重建。
+`edition build` 按方向、评分和 arXiv ID 稳定排序，先生成精选主稿，再将全部入选论文（含精选）按方向和容量组织成全览文章。全览使用保守源长度自动分篇，`edition measure` 必须通过真实微信公众号渲染器逐篇判断，硬上限为 100,000 字符。单篇论文是不可拆分的内容块。脚本不得从字符串中间硬截断；单个内容块超限时必须交给 Skill 缩减后重建。
 
-成稿结构与写作要求固化在 [稿件质量与编排规范](../.agents/skills/arxiv-paper-wechat/references/publication-policy.md)。发布稿总收录量最多 50 篇，按总分降序、arXiv ID 稳定选择；完整编辑结果仍保留全部 `keep` 判断。精选只从已选的总分 `>=7` 论文中取前 4 篇，不足时宁缺毋滥；每篇全览最多 30 篇。`copy.json` 不使用整段自由正文，而是分别保存研究问题、方法、创新、训练、结果、点评和推荐理由。CLI 据此确定性生成方向总览表、分组章节、作者机构、评分及论文/代码链接，防止容量缩减破坏关键证据链。
+成稿结构与写作要求固化在 [稿件质量与编排规范](../.agents/skills/arxiv-paper-wechat/references/publication-policy.md)。发布稿最多收录 40 篇，精选取其中总分 `>=7` 的前 4 篇；评分只用于内部选择。`copy.json` 分别保存独立撰写的 `overview`（约 100–160 字）和 `featured`（约 450–700 字，复杂论文可延长），按问题、方法、发现、价值与限制连贯解释；字数是编辑参考。CLI 生成简短导读、纯文本标题、主题分组与末尾“阅读论文 PDF”，代码入口仅在文案给出核心解读理由且有已核实代码地址时追加。发布稿不展示评分、关键词、序号、核查状态、生产说明、固定七栏或目录表；作者机构不再必填展示；每篇显示英文原标题与三级 🌟 阅读推荐度，推荐度不代表结论可靠性。全览没有每篇固定论文数上限，按压缩后篇幅预算尽量保持主题完整，证据边界在撰写阶段落实，程序检查通过后按用户授权直接推送草稿，由用户在手机上查看。旧七栏文案需重新撰写，成功归档不改写。
 
 `edition measure` 使用 `baoyu-post-to-wechat` 的真实 Markdown 渲染路径计算最终 HTML 容量。`edition validate` 必须检查：
 
@@ -224,7 +224,7 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
     "targetRenderedCharacters": 100000,
     "maxRenderedCharacters": 100000,
     "maxArticlesPerEdition": 30,
-    "maxPapersPerEdition": 50
+    "maxPapersPerEdition": 40
   }
 }
 ```
@@ -252,7 +252,7 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
 8. `editorial.json` 覆盖当天全部论文；drop 有理由，keep 有完整字段且总分由代码复算。
 9. 完整编辑结果不因发布限制被截断，缩减内容仅存在于发布工作区和最终稿件归档。
 10. 稿件集能按最终 HTML 硬上限分篇；未配置实测边界或任一文章超限时禁止发布。
-11. 发布稿总收录量最多 50 篇；精选稿最多 4 篇且不以低分稿补位；每篇全览最多 30 篇、全览无遗漏，所有文章具有固定总览表和完整的研究问题—方法—证据—点评结构。
+11. 发布稿总收录量最多 40 篇；精选稿最多 4 篇且不以低分稿补位；全览无遗漏并优先保持主题完整；全览与精选独立撰写，发布稿去除管理信息，保留解释结论必需的证据与限制。
 12. 封面由 Codex `$imagegen` Skill 生成；格式、最小尺寸、21:9 比例和内容指纹未经 CLI 验证时不能构建稿件集。
 13. 微信成功后只产生一个 `draft_created` 稿件集归档；本地归档失败可凭原 media ID 协调恢复且不会重复发稿。
 14. Git 不包含 PDF、临时文件、工作区或微信密钥，但包含列表、最终 Markdown、编辑结果和已发稿件。
@@ -272,3 +272,5 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
 - [Error Handling Policy](../.agents/skills/arxiv-paper-wechat/references/error-handling.md)
 - [PDF Cleanup Skill](../.agents/skills/cleanup-paper-pdfs/SKILL.md)
 - [WeChat Publishing Skill](../.agents/skills/baoyu-post-to-wechat/SKILL.md)
+
+渲染和草稿发布统一传入 `--no-cite`，关闭外链编号与文末重复链接汇总，保留每篇末尾的 PDF 入口。`edition measure` 在 Markdown 旁保存本次实测的 HTML，供排错留存，不作为推送前人工复核关卡。

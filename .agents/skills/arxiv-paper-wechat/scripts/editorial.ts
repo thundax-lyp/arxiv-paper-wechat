@@ -101,6 +101,7 @@ export function validateEditorialInput(list: PaperList, input: unknown): Editori
   }
   const missing = [...expected].filter((id) => !seen.has(id));
   if (missing.length) throw new Error(`Editorial input is incomplete; missing ${missing.length}: ${missing.slice(0, 8).join(", ")}`);
+  if (normalized.filter(paper => paper.decision === "keep").length > 40) throw new Error("Editorial keep limit is 40; retain the most important papers after full-text review");
   return normalized.sort((a, b) => a.arxivId.localeCompare(b.arxivId));
 }
 

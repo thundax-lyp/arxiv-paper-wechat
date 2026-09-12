@@ -34,7 +34,7 @@
 | 下载中断 | 保留 `.pdf.part`，重跑 `papers download` 或 `papers ingest`；CLI 使用 HTTP Range 续传。 |
 | 服务端不支持 Range | CLI 从头安全重写 `.part`；不要把旧分片拼接到完整响应。 |
 | `416`、长度不符或 PDF 头无效 | CLI 丢弃不再可用的分片并重试；正式 `.pdf` 不得产生。 |
-| 单篇重试耗尽 | 其他论文可继续；阶段最终返回非零并列出 arXiv ID。补齐全部失败项前不得进入编辑。 |
+| PDF 单篇重试耗尽 | CLI 记录失败原因并按相关度从候补递补，最多取得 60 篇。候补耗尽时报告实际成功篇数和失败记录；转换与编辑只处理最终成功候选。 |
 | arXiv HTML 返回 404、缺少正文或规整后异常短 | CLI 在 `list.json` 记录 `content.status: unavailable` 与原因，并从正式编辑候选中跳过。不得改用 MinerU、`pdftotext`、ar5iv 或摘要替代正文。 |
 | HTML 网络请求临时失败 | CLI 按配置有限重试；耗尽后停止本阶段并报告。不得把网络故障标为 HTML 不存在。 |
 | 磁盘满、无权限、原子改名失败 | 停止写入，保留可恢复的断点；清理空间或权限后重跑。主 Skill不得顺带删除历史 PDF。 |
@@ -53,6 +53,7 @@
 | 现象 | 处理 |
 | --- | --- |
 | `copy.json` 漏稿、重复、存在占位语或包含 drop 论文 | 重新读取 [publication-policy.md](publication-policy.md)，依据 `editorial.json` 修正结构化字段，保证所有 keep 论文恰好一次。 |
+| 旧七栏文案、缺少精选长文或精选整段复制全览 | 回读论文与内部编辑记录，独立重写 `overview` / `featured`；不拼接迁移，不修改旧成功归档。 |
 | `$imagegen` 不可用或生成失败 | 停止封面阶段并报告；不要静默改用需要 API Key 的 CLI fallback，也不要用占位图。 |
 | 封面格式、尺寸或 21:9 校验失败 | 重新生成或裁切成品，再运行 `cover validate`。换图后旧 `cover.json` 自动失效。 |
 | 微信硬上限为 `null` | 只允许 build/measure；validate/publish 必须停止，等待真实接口实测配置。 |

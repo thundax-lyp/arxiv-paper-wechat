@@ -29,6 +29,8 @@ export interface Paper {
 export interface DownloadScreening {
   decision: "download" | "skip";
   reason: string;
+  relevanceRank?: number;
+  downloadError?: string;
 }
 
 export interface HtmlContentStatus {
@@ -101,7 +103,7 @@ function parsePaperBlocks(section: string, category: string, sourceDate: string)
       versionedId,
       title: text(div(block, "list-title")).replace(/^Title:\s*/i, ""),
       authors,
-      abstract: text(div(block, "list-abstract")).replace(/^Abstract:\s*/i, "").replace(/[▽△]\s*(More|Less)/g, "").trim(),
+      abstract: text(div(block, "list-abstract") || block.match(/<p[^>]*class=["'][^"']*\bmathjax\b[^"']*["'][^>]*>([\s\S]*?)<\/p>/i)?.[1] || "").replace(/^Abstract:\s*/i, "").replace(/[▽△]\s*(More|Less)/g, "").trim(),
       categories: categoryCodes.length ? categoryCodes : [category],
       primaryCategory: categoryCodes[0] ?? category,
       comments: text(div(block, "list-comments")).replace(/^Comments:\s*/i, ""),
@@ -148,6 +150,7 @@ export function validateScreeningInput(list: PaperList, input: unknown): Map<str
   if (!Array.isArray(rows)) throw new Error("Screening input must be an array or an object with a papers array");
   const expected = new Set(list.papers.map((paper) => paper.arxivId));
   const screening = new Map<string, DownloadScreening>();
+  const ranks = new Set<number>();
   for (const [index, raw] of rows.entries()) {
     if (!raw || typeof raw !== "object") throw new Error(`Screening row ${index + 1} must be an object`);
     const row = raw as Record<string, unknown>;
@@ -156,7 +159,16 @@ export function validateScreeningInput(list: PaperList, input: unknown): Map<str
     if (screening.has(arxivId)) throw new Error(`Duplicate screening result: ${arxivId}`);
     if (row.decision !== "download" && row.decision !== "skip") throw new Error(`${arxivId}: decision must be download or skip`);
     if (!nonEmptyString(row.reason)) throw new Error(`${arxivId}: screening reason is required`);
-    screening.set(arxivId, { decision: row.decision, reason: row.reason.trim() });
+    const paper = list.papers.find((paper) => paper.arxivId === arxivId)!;
+    if (!nonEmptyString(paper.abstract)) throw new Error(`${arxivId}: abstract is missing; refresh the list before screening`);
+    if (row.decision === "download") {
+      if (!Number.isInteger(row.relevanceRank) || Number(row.relevanceRank) < 1 || ranks.has(Number(row.relevanceRank))) {
+        throw new Error(`${arxivId}: relevanceRank must be a unique positive integer`);
+      }
+      ranks.add(Number(row.relevanceRank));
+    }
+    screening.set(arxivId, { decision: row.decision, reason: row.reason.trim(),
+      ...(row.decision === "download" ? { relevanceRank: Number(row.relevanceRank) } : {}) });
   }
   const missing = [...expected].filter((arxivId) => !screening.has(arxivId));
   if (missing.length) throw new Error(`Screening input is incomplete; missing ${missing.length}: ${missing.slice(0, 8).join(", ")}`);
@@ -176,22 +188,19 @@ export function commitScreening(paths: DayPaths, inputPath: string): PaperList {
   return updated;
 }
 
-export function validateScreening(list: PaperList): { valid: true; total: number; download: number; skipped: number } {
+export function validateScreening(list: PaperList): { valid: true; total: number; download: number; skipped: number; reserve: number; failed: number } {
   const unreviewed = list.papers.filter((paper) => paper.screening === undefined);
   if (unreviewed.length) throw new Error(`Screening input is incomplete; missing ${unreviewed.length}: ${unreviewed.slice(0, 8).map((paper) => paper.arxivId).join(", ")}`);
   const screening = validateScreeningInput(list, list.papers.map((paper) => ({ arxivId: paper.arxivId, ...paper.screening })));
-  const download = [...screening.values()].filter((item) => item.decision === "download").length;
-  return { valid: true, total: list.papers.length, download, skipped: list.papers.length - download };
-}
-
-function downloadCandidates(list: PaperList): Paper[] {
-  validateScreening(list);
-  return list.papers.filter((paper) => paper.screening?.decision === "download");
+  const download = rankedCandidates(list).length;
+  const skipped = [...screening.values()].filter(item => item.decision === "skip").length;
+  const failed = list.papers.filter(paper => paper.screening?.downloadError).length;
+  return { valid: true, total: list.papers.length, download, skipped, reserve: list.papers.length - skipped - failed - download, failed };
 }
 
 export function reviewCandidates(list: PaperList): Paper[] {
   validateScreening(list);
-  return list.papers.filter((paper) => paper.screening?.decision === "download" && paper.content?.status !== "unavailable");
+  return rankedCandidates(list).filter((paper) => paper.content?.status !== "unavailable");
 }
 
 function mergePapers(papers: Paper[]): Paper[] {
@@ -398,13 +407,38 @@ export async function convertPaper(config: AppConfig, paths: DayPaths, paper: Pa
 
 export interface StageReport { total: number; completed: number; skipped: number; failures: Array<{ arxivId: string; error: string }> }
 
-export async function downloadAll(config: AppConfig, paths: DayPaths, concurrency = config.downloadConcurrency): Promise<StageReport> {
+export const MAX_DOWNLOAD_CANDIDATES = 60;
+
+function rankedCandidates(list: PaperList): Paper[] {
+  return list.papers.filter(paper => paper.screening?.decision === "download" && !paper.screening.downloadError)
+    .sort((a, b) => (a.screening!.relevanceRank ?? Infinity) - (b.screening!.relevanceRank ?? Infinity) || a.arxivId.localeCompare(b.arxivId))
+    .slice(0, MAX_DOWNLOAD_CANDIDATES);
+}
+
+export async function downloadAll(config: AppConfig, paths: DayPaths, concurrency = config.downloadConcurrency): Promise<StageReport & { replacedFailures: Array<{ arxivId: string; error: string }> }> {
   const list = readJson<PaperList>(paths.list);
-  const outcomes = await mapPool(downloadCandidates(list), concurrency, async (paper) => {
-    try { return { paper, status: await downloadPaper(config, paths, paper) }; }
-    catch (error) { return { paper, status: "failed" as const, error: error instanceof Error ? error.message : String(error) }; }
-  });
-  return report(outcomes);
+  validateScreening(list);
+  const attempted = new Set<string>();
+  const outcomes: Array<{ paper: Paper; status: string; error?: string }> = [];
+  const replacedFailures: Array<{ arxivId: string; error: string }> = [];
+  while (true) {
+    const batch = rankedCandidates(list).filter(paper => !attempted.has(paper.arxivId));
+    if (!batch.length) break;
+    const results = await mapPool(batch, concurrency, async paper => {
+      attempted.add(paper.arxivId);
+      try { return { paper, status: await downloadPaper(config, paths, paper) }; }
+      catch (error) { return { paper, status: "failed", error: error instanceof Error ? error.message : String(error) }; }
+    });
+    for (const result of results) {
+      if (result.status === "failed") {
+        result.paper.screening!.downloadError = result.error;
+        replacedFailures.push({ arxivId: result.paper.arxivId, error: result.error! });
+      } else outcomes.push(result);
+    }
+    // Persist exhausted retries before admitting the next ranked replacements.
+    atomicJson(paths.list, list);
+  }
+  return { ...report(outcomes), replacedFailures };
 }
 
 export async function convertAll(config: AppConfig, paths: DayPaths, concurrency = config.convertConcurrency): Promise<StageReport> {
@@ -442,49 +476,16 @@ function report(outcomes: Array<{ paper: Paper; status: string; error?: string }
   };
 }
 
-function semaphore(limit: number): <T>(work: () => Promise<T>) => Promise<T> {
-  let active = 0;
-  const waiters: Array<() => void> = [];
-  return async <T>(work: () => Promise<T>): Promise<T> => {
-    if (active >= limit) await new Promise<void>((resolve) => waiters.push(resolve));
-    active += 1;
-    try { return await work(); }
-    finally { active -= 1; waiters.shift()?.(); }
-  };
-}
-
 export async function ingest(config: AppConfig, paths: DayPaths, refresh = false, downloadConcurrency = config.downloadConcurrency, convertConcurrency = config.convertConcurrency): Promise<{ download: StageReport; convert: StageReport }> {
-  const list = await crawl(config, paths, refresh);
-  const candidates = downloadCandidates(list);
-  const withConversionSlot = semaphore(convertConcurrency);
-  const conversions: Array<Promise<{ paper: Paper; status: string; error?: string }>> = [];
-  const downloads = await mapPool(candidates, downloadConcurrency, async (paper) => {
-    try {
-      const status = await downloadPaper(config, paths, paper);
-      conversions.push(withConversionSlot(async () => {
-        try { return { paper, status: await convertPaper(config, paths, paper) }; }
-        catch (error) {
-          return { paper, status: error instanceof HtmlUnavailableError ? "unavailable" : "failed", error: error instanceof Error ? error.message : String(error) };
-        }
-      }));
-      return { paper, status };
-    } catch (error) {
-      conversions.push(Promise.resolve({ paper, status: "blocked", error: "PDF unavailable" }));
-      return { paper, status: "failed", error: error instanceof Error ? error.message : String(error) };
-    }
-  });
-  const converted = await Promise.all(conversions);
-  commitHtmlAvailability(paths, converted);
-  return {
-    download: report(downloads),
-    convert: report(converted),
-  };
+  await crawl(config, paths, refresh);
+  const download = await downloadAll(config, paths, downloadConcurrency);
+  return { download, convert: await convertAll(config, paths, convertConcurrency) };
 }
 
 export function status(paths: DayPaths): Record<string, unknown> {
   const list = existsSync(paths.list) ? readJson<PaperList>(paths.list) : undefined;
   const papers = list?.papers ?? [];
-  const candidates = list ? papers.filter((paper) => paper.screening?.decision === "download") : [];
+  const candidates = list ? rankedCandidates(list) : [];
   const reviewable = list ? reviewCandidates(list) : [];
   const screened = list ? papers.filter((paper) => paper.screening !== undefined).length : 0;
   const skipped = list ? papers.filter((paper) => paper.screening?.decision === "skip").length : 0;
@@ -492,7 +493,9 @@ export function status(paths: DayPaths): Record<string, unknown> {
     sourceDate: paths.key,
     listReady: Boolean(list),
     paperCount: papers.length,
-    screeningReady: Boolean(list && screened === papers.length),
+    screeningReady: Boolean(list && screened === papers.length && papers.every(paper => paper.abstract.trim() && (paper.screening?.decision === "skip" || Number.isInteger(paper.screening?.relevanceRank)))),
+    screeningReserve: papers.filter(paper => paper.screening?.decision === "download" && !paper.screening.downloadError).length - candidates.length,
+    downloadFailed: papers.filter(paper => paper.screening?.downloadError).length,
     screeningDownload: candidates.length,
     screeningSkipped: skipped,
     htmlUnavailable: candidates.filter((paper) => paper.content?.status === "unavailable").length,

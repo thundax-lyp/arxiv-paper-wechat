@@ -3,10 +3,10 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { AppConfig, arxivHeading, atomicJson, dayKey, nextWeekday, pathsFor, resolveTargetDate } from "./core";
-import { commitEditorial, EditorialItem, validateEditorial } from "./editorial";
+import { commitEditorial, EditorialItem, validateEditorial, validateEditorialInput } from "./editorial";
 import { buildEdition, measureEdition, selectFeatured, selectForPublication, validateEdition } from "./edition";
 import {
-  commitScreening, crawl, downloadAll, downloadPaper, PaperList, paperFileStem, parseArxivPage, parseCatchupPage, validateScreening,
+  commitScreening, crawl, downloadAll, downloadPaper, PaperList, paperFileStem, parseArxivPage, parseCatchupPage, validateScreening, validateScreeningInput,
 } from "./papers";
 import { prepareCover, validateCover } from "./cover";
 import { adoptPublishedDraft, archivePublication } from "./publication";
@@ -38,7 +38,7 @@ function prepareDay(config: AppConfig) {
       arxivId: "2609.12345", version: 1, versionedId: "2609.12345v1", title: "Tool Agent", authors: ["Ada Lovelace"],
       abstract: "An agent paper.", categories: ["cs.AI"], primaryCategory: "cs.AI", comments: "", published: "2026-09-11", updated: "2026-09-11",
       absUrl: "https://arxiv.org/abs/2609.12345v1", pdfUrl: "https://arxiv.org/pdf/2609.12345v1", sourceCategories: ["cs.AI"],
-      screening: { decision: "download", reason: "标题表明研究工具智能体。" },
+      screening: { decision: "download", relevanceRank: 1, reason: "标题表明研究工具智能体。" },
     }],
   };
   atomicJson(paths.list, list);
@@ -52,10 +52,11 @@ function prepareDay(config: AppConfig) {
   atomicJson(input, editorialInput);
   commitEditorial(paths, input);
   atomicJson(paths.copy, {
-    sourceDate: "20260911", intro: "本期共筛出一篇值得关注的工具智能体论文。", papers: [{
-      arxivId: "2609.12345", title: "工具智能体", summary: "研究工具智能体的可靠执行问题。", critique: "问题明确，但仍需更多真实任务验证。",
-      method: "构建带状态检查的工具调用系统。", innovation: "把执行验证纳入智能体闭环。", training: "不训练基座模型，使用公开任务做推理评测。",
-      results: "在公开任务上优于所列基线。", recommendation: "适合关注工具调用可靠性的读者。",
+    sourceDate: "20260911", intro: "本期关注工具执行后如何检查状态，避免错误继续传播。", papers: [{
+      arxivId: "2609.12345", title: "工具执行后如何发现错误",
+      recommendationLevel: 3,
+      overview: "工具调用成功不代表任务完成。该研究在执行后检查状态，并在发现偏差时修正后续动作。公开任务上的表现优于所列基线，但实验没有覆盖真实用户的长程任务。",
+      featured: "工具返回成功时，智能体仍可能误判任务状态。研究让系统先执行动作，再比较实际状态和目标，出现偏差时调整下一步。\n\n这种检查把错误处理放回执行过程。公开任务结果支持它在所测场景中的作用，但不能据此推断真实用户的长程任务也会改善；阅读时值得关注状态检查如何定义成功。",
     }],
   });
   const png = Buffer.alloc(24);
@@ -143,14 +144,14 @@ test("screening writes every decision and gates downloads", async () => {
   atomicJson(paths.list, {
     schemaVersion: 1, sourceDate: "20260911", arxivHeading: arxivHeading("20260911"), categories: config.categories,
     crawledAt: "2026-09-11T00:00:00Z", papers: [
-      { arxivId: "2609.00001", version: 1, versionedId: "2609.00001v1", title: "Agent Paper", authors: [], abstract: "", categories: ["cs.AI"], primaryCategory: "cs.AI", comments: "", published: "2026-09-11", updated: "2026-09-11", absUrl: "", pdfUrl: "", sourceCategories: ["cs.AI"] },
-      { arxivId: "2609.00002", version: 1, versionedId: "2609.00002v1", title: "Vision Paper", authors: [], abstract: "", categories: ["cs.AI"], primaryCategory: "cs.AI", comments: "", published: "2026-09-11", updated: "2026-09-11", absUrl: "", pdfUrl: "", sourceCategories: ["cs.AI"] },
+      { arxivId: "2609.00001", version: 1, versionedId: "2609.00001v1", title: "Agent Paper", authors: [], abstract: "A tool-using LLM agent method.", categories: ["cs.AI"], primaryCategory: "cs.AI", comments: "", published: "2026-09-11", updated: "2026-09-11", absUrl: "", pdfUrl: "", sourceCategories: ["cs.AI"] },
+      { arxivId: "2609.00002", version: 1, versionedId: "2609.00002v1", title: "Vision Paper", authors: [], abstract: "Image segmentation without language models.", categories: ["cs.AI"], primaryCategory: "cs.AI", comments: "", published: "2026-09-11", updated: "2026-09-11", absUrl: "", pdfUrl: "", sourceCategories: ["cs.AI"] },
     ],
   } satisfies PaperList);
   await expect(downloadAll(config, paths)).rejects.toThrow("Screening input is incomplete");
   const input = join(config.root, "screening.json");
   atomicJson(input, [
-    { arxivId: "2609.00001", decision: "download", reason: "标题直接指向 Agent。" },
+    { arxivId: "2609.00001", decision: "download", relevanceRank: 1, reason: "标题直接指向 Agent。" },
     { arxivId: "2609.00002", decision: "skip", reason: "标题显示为纯视觉任务。" },
   ]);
   const list = commitScreening(paths, input);
@@ -205,16 +206,30 @@ test("edition is rendered through the real WeChat path before promotion", () => 
   const pending = buildEdition(config, paths);
   expect(pending.articles.map((article) => article.kind)).toEqual(["featured", "overview"]);
   const markdown = readFileSync(join(paths.workDir, pending.articles[0].path), "utf8");
-  expect(markdown).toContain("## 📋 本期总览");
-  expect(markdown).toContain("| 方向 | 序号 | 论文 | 评分 | 关键词 |");
-  expect(markdown).toContain("## 🧾 精选规则");
-  expect(markdown).toContain("### [1] 工具智能体");
-  expect(markdown).toContain("> **原标题：** Tool Agent");
-  expect(markdown).toContain("**📊 结果与证据**");
-  expect(markdown).toContain("**🧐 编辑点评**");
+  const copy = JSON.parse(readFileSync(paths.copy, "utf8")).papers[0];
+  const overview = readFileSync(join(paths.workDir, pending.articles[1].path), "utf8");
+  expect(markdown).toContain(copy.featured);
+  expect(markdown).not.toContain(copy.overview);
+  expect(overview).toContain(copy.overview);
+  expect(overview).not.toContain(copy.featured);
+  for (const article of [markdown, overview]) {
+    expect(article).toContain(`### ${copy.title}\n\nTool Agent\n\n🌟🌟🌟`);
+    expect(article.trim().endsWith("[阅读论文 PDF](https://arxiv.org/pdf/2609.12345v1)")).toBe(true);
+    for (const internal of ["评分", "关键词", "原标题", "Ada Lovelace", "example.com/code", "arxiv.org/abs", "| 方向 |", "### [1]", "精选规则"]) {
+      expect(article).not.toContain(internal);
+    }
+  }
+  expect(markdown).toContain("阅读推荐：");
+  expect(overview).not.toContain("阅读推荐：");
   expect(() => validateEdition(config, paths)).toThrow("has not been measured");
   const measured = measureEdition(paths, join(import.meta.dir, "..", "..", "baoyu-post-to-wechat"));
   expect(measured.articles.every((article) => Number(article.renderedCharacters) > 0)).toBe(true);
+  for (const article of measured.articles) {
+    const html = readFileSync(join(paths.workDir, article.path.replace(/\.md$/, ".html")), "utf8");
+    expect(html.match(/href="https:\/\/arxiv.org\/pdf\/2609.12345v1"/g)).toHaveLength(1);
+    expect(html).not.toContain("<sup>[1]</sup>");
+    expect(html).not.toContain("阅读论文 PDF:");
+  }
   expect(validateEdition(config, paths)).toMatchObject({ valid: true, articleCount: 2 });
 });
 
@@ -266,4 +281,165 @@ test("publication archives keep multiple drafts from the same source date", () =
   archivePublication(config, paths, second);
   expect(existsSync(join(config.publicationRepository, "20260911", "draft-one", "receipt.json"))).toBe(true);
   expect(existsSync(join(config.publicationRepository, "20260911", "draft-two", "receipt.json"))).toBe(true);
+});
+
+
+test("copy requires independent featured prose and rejects legacy-only copy", () => {
+  const { config } = fixture();
+  const paths = prepareDay(config);
+  const copy = JSON.parse(readFileSync(paths.copy, "utf8"));
+  delete copy.papers[0].featured;
+  atomicJson(paths.copy, copy);
+  expect(() => buildEdition(config, paths)).toThrow(".featured is required");
+  copy.papers[0].featured = copy.papers[0].overview;
+  atomicJson(paths.copy, copy);
+  expect(() => buildEdition(config, paths)).toThrow("independently written");
+  delete copy.papers[0].overview;
+  copy.papers[0].summary = "Legacy summary";
+  atomicJson(paths.copy, copy);
+  expect(() => buildEdition(config, paths)).toThrow(".overview is required");
+});
+
+test("code link is opt-in and requires an editorial URL", () => {
+  const { config } = fixture();
+  const paths = prepareDay(config);
+  const copy = JSON.parse(readFileSync(paths.copy, "utf8"));
+  copy.papers[0].codeLinkReason = "核心结论依赖仓库中的执行检查实现。";
+  atomicJson(paths.copy, copy);
+  const edition = buildEdition(config, paths);
+  const markdown = readFileSync(join(paths.workDir, edition.articles[0].path), "utf8");
+  expect(markdown).toContain("[代码](https://example.com/code)");
+  expect(markdown).not.toContain(copy.papers[0].codeLinkReason);
+  const editorial = JSON.parse(readFileSync(paths.editorial, "utf8"));
+  delete editorial.papers[0].codeUrl;
+  atomicJson(paths.editorial, editorial);
+  expect(() => buildEdition(config, paths)).toThrow("requires a verified editorial codeUrl");
+});
+
+function prepareMany(config: AppConfig, counts: number[]) {
+  const paths = prepareDay(config);
+  const list = JSON.parse(readFileSync(paths.list, "utf8"));
+  const editorial = JSON.parse(readFileSync(paths.editorial, "utf8"));
+  const copy = JSON.parse(readFileSync(paths.copy, "utf8"));
+  const paper = list.papers[0], edit = editorial.papers[0], prose = copy.papers[0];
+  list.papers = []; editorial.papers = []; copy.papers = [];
+  const directions = ["Agent系统与工具使用", "LLM推理与规划"];
+  counts.forEach((count, group) => {
+    for (let i = 0; i < count; i++) {
+      const id = `2609.${String(copy.papers.length).padStart(5, "0")}`;
+      list.papers.push({ ...paper, arxivId: id, pdfUrl: `https://arxiv.org/pdf/${id}` });
+      editorial.papers.push({ ...edit, arxivId: id, direction: directions[group], score: { ...edit.score, total: 6 } });
+      copy.papers.push({ ...prose, arxivId: id, title: `论文 ${id}` });
+    }
+  });
+  atomicJson(paths.list, list); atomicJson(paths.editorial, editorial); atomicJson(paths.copy, copy);
+  return paths;
+}
+
+test("compact overview can hold more than thirty papers without losing link ownership", () => {
+  const { config } = fixture();
+  config.wechat.maxRenderedCharacters = 100000;
+  config.wechat.targetRenderedCharacters = 100000;
+  const paths = prepareMany(config, [35]);
+  const edition = buildEdition(config, paths);
+  expect(edition.articles).toHaveLength(1);
+  expect(edition.articles[0].paperIds).toHaveLength(35);
+  const markdown = readFileSync(join(paths.workDir, edition.articles[0].path), "utf8");
+  const blocks = markdown.split("\n### ").slice(1);
+  expect(blocks).toHaveLength(35);
+  blocks.forEach((block, i) => {
+    expect(block.trim().endsWith(`[阅读论文 PDF](https://arxiv.org/pdf/${edition.articles[0].paperIds[i]})`)).toBe(true);
+  });
+});
+
+test("budget preserves themes when they fit and splits oversized themes only between papers", () => {
+  const { config } = fixture();
+  const paths = prepareMany(config, [3, 3]);
+  let edition = buildEdition(config, paths);
+  expect(edition.articles.map(a => a.paperIds.length)).toEqual([3, 3]);
+  config.wechat.targetRenderedCharacters = 1000;
+  edition = buildEdition(config, paths);
+  expect(edition.articles.length).toBeGreaterThan(2);
+  const ids = edition.articles.flatMap(a => a.paperIds);
+  expect(ids).toHaveLength(6);
+  expect(new Set(ids).size).toBe(6);
+});
+
+
+test("catchup reads abstracts from current mathjax paragraphs", () => {
+  const html = `<h1>Catchup results for Artificial Intelligence on Fri, 04 Sep 2026</h1><dl id="articles"><h3>New submissions</h3><dt><a href="/abs/2609.00001">paper</a></dt><dd><div class="meta"><div class="list-title">Title: Agent</div><p class="mathjax">A tool &amp; memory method.</p></div></dd></dl>`;
+  expect(parseCatchupPage(html, "cs.AI", "20260904").papers[0].abstract).toBe("A tool & memory method.");
+});
+
+test("screening requires abstracts and unique relevance ranks", () => {
+  const { config } = fixture();
+  const paths = prepareDay(config);
+  const list = JSON.parse(readFileSync(paths.list, "utf8"));
+  const input = [{ arxivId: list.papers[0].arxivId, decision: "download", reason: "Tool reliability", relevanceRank: 1 }];
+  list.papers[0].abstract = "";
+  expect(() => validateScreeningInput(list, input)).toThrow("abstract is missing");
+  list.papers[0].abstract = "Tool reliability";
+  list.papers.push({ ...list.papers[0], arxivId: "2609.99999" });
+  expect(() => validateScreeningInput(list, [...input, { ...input[0], arxivId: "2609.99999" }])).toThrow("unique positive integer");
+});
+
+test("download caps successful candidates at sixty and replaces exhausted failures in rank order", async () => {
+  const { config } = fixture();
+  config.maxRetries = 1;
+  const paths = prepareDay(config);
+  const list = JSON.parse(readFileSync(paths.list, "utf8"));
+  const base = list.papers[0];
+  const requested: number[] = [];
+  const server = Bun.serve({ port: 0, fetch(request) {
+    const rank = Number(new URL(request.url).pathname.slice(1));
+    requested.push(rank);
+    return rank === 1 ? new Response("missing", { status: 404 }) : new Response("%PDF-1.7\nbody\n%%EOF");
+  } });
+  try {
+    list.papers = Array.from({ length: 62 }, (_, i) => ({ ...base, arxivId: `2609.${String(i).padStart(5, "0")}`, pdfUrl: `${server.url}${i + 1}`, screening: { decision: "download", reason: "Tool reliability", relevanceRank: i + 1 } })).reverse();
+    atomicJson(paths.list, list);
+    const result = await downloadAll(config, paths, 4);
+    expect(result.completed).toBe(60);
+    expect(result.replacedFailures).toHaveLength(1);
+    expect(requested).toContain(61);
+    expect(requested).not.toContain(62);
+    const saved = JSON.parse(readFileSync(paths.list, "utf8"));
+    expect(saved.papers.find((p: any) => p.screening.relevanceRank === 1).screening.downloadError).toBeTruthy();
+    requested.length = 0;
+    expect((await downloadAll(config, paths, 4)).skipped).toBe(60);
+    expect(requested).toHaveLength(0);
+  } finally { server.stop(true); }
+});
+
+test("full-text review rejects more than forty retained papers", () => {
+  const { config } = fixture();
+  const paths = prepareDay(config);
+  const list = JSON.parse(readFileSync(paths.list, "utf8"));
+  const base = list.papers[0];
+  const edit = JSON.parse(readFileSync(paths.editorial, "utf8")).papers[0];
+  list.papers = Array.from({ length: 41 }, (_, i) => ({ ...base, arxivId: `2609.${String(i).padStart(5, "0")}`, screening: { ...base.screening, relevanceRank: i + 1 } }));
+  const rows = list.papers.map((p: any) => ({ ...edit, arxivId: p.arxivId }));
+  expect(() => validateEditorialInput(list, rows)).toThrow("keep limit is 40");
+  rows[40] = { arxivId: rows[40].arxivId, decision: "drop", tags: [], reason: "Lower priority after evidence comparison" };
+  expect(validateEditorialInput(list, rows).filter(p => p.decision === "keep")).toHaveLength(40);
+});
+
+
+test("recommendation tiers reject invalid values and render consistently", () => {
+  const { config } = fixture();
+  const paths = prepareDay(config);
+  const copy = JSON.parse(readFileSync(paths.copy, "utf8"));
+  for (const level of [undefined, 0, 4, 1.5, "3"]) {
+    copy.papers[0].recommendationLevel = level;
+    atomicJson(paths.copy, copy);
+    expect(() => buildEdition(config, paths)).toThrow("recommendationLevel");
+  }
+  for (const level of [1, 2, 3]) {
+    copy.papers[0].recommendationLevel = level;
+    atomicJson(paths.copy, copy);
+    const edition = buildEdition(config, paths);
+    for (const article of edition.articles) {
+      expect(readFileSync(join(paths.workDir, article.path), "utf8")).toContain(`Tool Agent\n\n${"🌟".repeat(level)}\n\n`);
+    }
+  }
 });

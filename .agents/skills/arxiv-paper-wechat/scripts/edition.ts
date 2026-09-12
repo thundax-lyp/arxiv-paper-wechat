@@ -9,13 +9,10 @@ import { requireValidatedCover } from "./cover";
 export interface CopyItem {
   arxivId: string;
   title: string;
-  summary: string;
-  critique: string;
-  method: string;
-  innovation: string;
-  training: string;
-  results: string;
-  recommendation: string;
+  recommendationLevel: 1 | 2 | 3;
+  overview: string;
+  featured?: string;
+  codeLinkReason?: string;
 }
 
 export interface CopyDocument {
@@ -53,13 +50,14 @@ function requireText(value: unknown, name: string): string {
   return text;
 }
 
-export function loadCopy(paths: DayPaths, kept: EditorialItem[]): CopyDocument {
+export function loadCopy(paths: DayPaths, kept: EditorialItem[], selected: EditorialItem[] = kept): CopyDocument {
   if (!existsSync(paths.copy)) throw new Error(`Publication copy not found: ${paths.copy}`);
   const copy = readJson<CopyDocument>(paths.copy);
   if (copy.sourceDate.replaceAll("-", "") !== paths.key) throw new Error("copy.json sourceDate does not match target date");
   copy.intro = requireText(copy.intro, "copy.json intro");
   if (!Array.isArray(copy.papers)) throw new Error("copy.json papers must be an array");
   const expected = new Set(kept.map((paper) => paper.arxivId));
+  const featuredIds = new Set(selectFeatured(selected).map((paper) => paper.arxivId));
   const seen = new Set<string>();
   for (const item of copy.papers) {
     item.arxivId = String(item.arxivId ?? "").replace(/v\d+$/, "");
@@ -67,8 +65,20 @@ export function loadCopy(paths: DayPaths, kept: EditorialItem[]): CopyDocument {
     if (seen.has(item.arxivId)) throw new Error(`copy.json duplicates paper: ${item.arxivId}`);
     seen.add(item.arxivId);
     item.title = requireText(item.title, `${item.arxivId}.title`);
-    for (const field of ["summary", "critique", "method", "innovation", "training", "results", "recommendation"] as const) {
-      item[field] = requireText(item[field], `${item.arxivId}.${field}`);
+    if (/[\r\n\[\]<>]/.test(item.title)) throw new Error(`${item.arxivId}.title must be plain text`);
+    if (![1, 2, 3].includes(item.recommendationLevel)) throw new Error(`${item.arxivId}.recommendationLevel must be 1, 2, or 3`);
+    item.overview = requireText(item.overview, `${item.arxivId}.overview`);
+    if (featuredIds.has(item.arxivId) || item.featured !== undefined) {
+      item.featured = requireText(item.featured, `${item.arxivId}.featured`);
+      if (item.featured.replace(/\s/g, "") === item.overview.replace(/\s/g, "")) {
+        throw new Error(`${item.arxivId}.featured must be independently written`);
+      }
+    }
+    if (item.codeLinkReason !== undefined) {
+      item.codeLinkReason = requireText(item.codeLinkReason, `${item.arxivId}.codeLinkReason`);
+      if (!kept.find((paper) => paper.arxivId === item.arxivId)?.codeUrl) {
+        throw new Error(`${item.arxivId}.codeLinkReason requires a verified editorial codeUrl`);
+      }
     }
   }
   const missing = [...expected].filter((id) => !seen.has(id));
@@ -80,22 +90,8 @@ function yaml(value: string): string {
   return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"').replaceAll("\n", " ").trim();
 }
 
-function table(value: string): string {
-  return value.replaceAll("|", "\\|").replaceAll("\n", " ").trim();
-}
-
-function directionLabel(direction: string): string {
-  const labels: Record<string, string> = {
-    "Agent系统与工具使用": "🧭 Agent 系统 / 工具使用",
-    "LLM推理与规划": "🧠 LLM 推理 / 规划",
-    "RAG与知识检索": "📚 RAG / 知识检索",
-    "多智能体与协作": "🤝 多智能体 / 协作",
-    "LLM训练与对齐": "⚙️ LLM 训练 / 对齐",
-    "评测与安全": "🛡️ 评测 / 安全",
-    "应用与基准": "🧪 应用 / Benchmark",
-    "其他 Agent / LLM 方向": "🔎 其他 Agent / LLM 方向",
-  };
-  return labels[direction] ?? `🔎 ${direction}`;
+function plainMarkdown(value: string): string {
+  return value.replace(/\s+/g, " ").replace(/([\\`*_{}\[\]()#+.!<>|&])/g, "\\$1");
 }
 
 function articleMarkdown(
@@ -103,56 +99,49 @@ function articleMarkdown(
   intro: string,
   kind: "featured" | "overview",
   blocks: Array<{ paper: Paper; editorial: EditorialItem; copy: CopyItem }>,
+  showLegend: boolean,
 ): string {
-  const summary = `${title}：收录 ${blocks.length} 篇，覆盖 ${[...new Set(blocks.map(({ editorial }) => editorial.direction))].join("、")}。`;
-  const groupIndexes = new Map<string, number>();
-  const overviewRows = blocks.map(({ editorial, copy }) => {
-    const direction = editorial.direction ?? "其他 Agent / LLM 方向";
-    const sequence = (groupIndexes.get(direction) ?? 0) + 1;
-    groupIndexes.set(direction, sequence);
-    return `| ${table(direction)} | ${sequence} | ${table(copy.title)} | ⭐ ${editorial.score?.total ?? 0}/10 | ${table(editorial.tags.slice(0, 4).join("、"))} |`;
-  });
   const sections: string[] = [];
   let previousDirection = "";
-  blocks.forEach(({ paper, editorial, copy }, index) => {
+  for (const { paper, editorial, copy } of blocks) {
     const direction = editorial.direction ?? "其他 Agent / LLM 方向";
     if (direction !== previousDirection) {
-      sections.push(`## ${directionLabel(direction)}`);
+      sections.push(`## ${direction}`);
       previousDirection = direction;
     }
-    const links = [`[arXiv 原文](${paper.absUrl})`, `[PDF](${paper.pdfUrl})`];
-    if (editorial.codeUrl) links.push(`[代码](${editorial.codeUrl})`);
-    sections.push(`### [${index + 1}] ${copy.title}\n\n> **原标题：** ${paper.title}\n\n- **评分：** ${editorial.score?.total ?? 0}/10\n- **作者/机构：** ${editorial.authorsOrg}\n- **关键词：** ${editorial.tags.join("、")}\n\n**📌 研究问题与结论**  \n${copy.summary}\n\n**🔧 方法与系统**  \n${copy.method}\n\n**💡 核心创新**  \n${copy.innovation}\n\n**🏋️ 训练与数据**  \n${copy.training}\n\n**📊 结果与证据**  \n${copy.results}\n\n**🧐 编辑点评**  \n${copy.critique}\n\n**⭐ 为什么值得读**  \n${copy.recommendation}\n\n${links.join(" · ")}`);
-  });
-  const opening = kind === "featured"
-    ? "本篇只收录评分不低于 7 分的当日强稿，最多 4 篇；高分稿不足时宁缺毋滥。"
-    : "本篇覆盖筛选后保留的全部论文，便于系统扫稿与后续检索。";
-  const rubric = kind === "featured"
-    ? "\n\n## 🧾 精选规则\n\n按固定口径评估新意（0–3）、影响力（0–3）、证据强度（0–2）和受众匹配度（0–2）；总分达到 7 才有资格进入精选。"
-    : "";
-  return `---\ntitle: "${yaml(title)}"\nauthor: "Thundax"\nsummary: "${yaml(summary)}"\ndescription: "${yaml(summary)}"\n---\n\n# 📡 ${title}\n\n> 数据源：arXiv \`cs.AI\` / \`cs.CL\` / \`cs.MA\` 当日新投稿  \n> 范围：Agent / LLM / 多智能体相关研究\n\n## 📋 本期总览\n\n${intro}\n\n${opening}\n\n| 方向 | 序号 | 论文 | 评分 | 关键词 |\n|---|---:|---|---|---|\n${overviewRows.join("\n")}${rubric}\n\n${sections.join("\n\n---\n\n")}\n`;
+    const links = [`[阅读论文 PDF](${paper.pdfUrl})`];
+    if (copy.codeLinkReason && editorial.codeUrl) links.push(`[代码](${editorial.codeUrl})`);
+    sections.push(`### ${copy.title}\n\n${plainMarkdown(requireText(paper.title, `${paper.arxivId}.originalTitle`))}\n\n${"🌟".repeat(copy.recommendationLevel)}\n\n${kind === "featured" ? copy.featured! : copy.overview}\n\n${links.join(" · ")}`);
+  }
+  const legend = showLegend ? "\n\n阅读推荐：🌟 值得关注；🌟🌟 建议阅读；🌟🌟🌟 优先精读。星标表示本期阅读优先级，不代表研究结论的可靠程度。" : "";
+  const scope = kind === "overview" ? "\n\n本期入选论文全览。" : "";
+  return `---\ntitle: "${yaml(title)}"\nauthor: "Thundax"\nsummary: "${yaml(intro)}"\ndescription: "${yaml(intro)}"\n---\n\n# ${title}\n\n${intro}${scope}${legend}\n\n${sections.join("\n\n")}\n`;
 }
 
-function estimate(block: CopyItem): number {
-  return block.title.length + block.summary.length + block.critique.length + block.method.length
-    + block.innovation.length + block.training.length + block.results.length + block.recommendation.length + 520;
-}
-
-function chunkByBudget(items: CopyItem[], budget: number, maxItems = Number.MAX_SAFE_INTEGER): CopyItem[][] {
+/** Pack whole themes where possible; split only oversized themes between papers. */
+function chunkByBudget(items: CopyItem[], budget: number, directions: Map<string, EditorialItem>, papers: Map<string, Paper>): CopyItem[][] {
   const chunks: CopyItem[][] = [];
   let current: CopyItem[] = [];
   let size = 0;
+  const estimate = (item: CopyItem) => item.title.length + item.overview.length + plainMarkdown(papers.get(item.arxivId)?.title ?? "").length + 210;
+  const groups: CopyItem[][] = [];
   for (const item of items) {
-    const itemSize = estimate(item);
-    if (current.length && (size + itemSize > budget || current.length >= maxItems)) {
-      chunks.push(current);
-      current = [];
-      size = 0;
-    }
-    current.push(item);
-    size += itemSize;
+    const last = groups.at(-1);
+    if (last && directions.get(last[0].arxivId)?.direction === directions.get(item.arxivId)?.direction) last.push(item);
+    else groups.push([item]);
   }
-  if (current.length) chunks.push(current);
+  const flush = () => { if (current.length) chunks.push(current); current = []; size = 0; };
+  for (const group of groups) {
+    const groupSize = group.reduce((sum, item) => sum + estimate(item), 0);
+    if (current.length && size + groupSize > budget) flush();
+    for (const item of group) {
+      const itemSize = estimate(item);
+      if (current.length && size + itemSize > budget) flush();
+      current.push(item);
+      size += itemSize;
+    }
+  }
+  flush();
   return chunks;
 }
 
@@ -167,7 +156,7 @@ export function buildEdition(config: AppConfig, paths: DayPaths, coverPath?: str
     return direction || score || a.arxivId.localeCompare(b.arxivId);
   });
   if (!kept.length) throw new Error("There are no kept papers to publish");
-  const copy = loadCopy(paths, allKept);
+  const copy = loadCopy(paths, allKept, kept);
   const paperById = new Map(list.papers.map((paper) => [paper.arxivId, paper]));
   const editById = new Map(kept.map((paper) => [paper.arxivId, paper]));
   const copyById = new Map(copy.papers.map((paper) => [paper.arxivId, paper]));
@@ -183,10 +172,10 @@ export function buildEdition(config: AppConfig, paths: DayPaths, coverPath?: str
     : Math.min(config.wechat.targetRenderedCharacters ?? hard, Math.floor(hard / 6));
   const articleSpecs: Array<{ kind: "featured" | "overview"; title: string; items: CopyItem[] }> = [];
   if (featuredCopy.length) articleSpecs.push({ kind: "featured", title: `arXiv Agent 与大模型研究简报｜${displayDay(paths.key)}｜精选`, items: featuredCopy });
-  const overviewChunks = chunkByBudget(orderedCopy, target, 30);
+  const overviewChunks = chunkByBudget(orderedCopy, Math.max(1, target - copy.intro!.length - 500), editById, paperById);
   overviewChunks.forEach((items, index) => articleSpecs.push({
     kind: "overview",
-    title: `arXiv Agent 与大模型研究简报｜${displayDay(paths.key)}｜论文全览${overviewChunks.length > 1 ? ` ${index + 1}/${overviewChunks.length}` : ""}`,
+    title: `arXiv Agent 与大模型研究简报｜${displayDay(paths.key)}｜入选论文全览${overviewChunks.length > 1 ? ` ${index + 1}/${overviewChunks.length}` : ""}`,
     items,
   }));
   const selectedCover = resolve(coverPath ?? join(paths.workDir, "cover.png"));
@@ -197,7 +186,7 @@ export function buildEdition(config: AppConfig, paths: DayPaths, coverPath?: str
   mkdirSync(articlesDir, { recursive: true });
   const articles = articleSpecs.map((spec, index): EditionArticle => {
     const blocks = spec.items.map((item) => ({ paper: paperById.get(item.arxivId)!, editorial: editById.get(item.arxivId)!, copy: item }));
-    const markdown = articleMarkdown(spec.title, copy.intro!, spec.kind, blocks);
+    const markdown = articleMarkdown(spec.title, copy.intro!, spec.kind, blocks, index === 0);
     const path = join(articlesDir, `${String(index + 1).padStart(2, "0")}-${spec.kind}.md`);
     atomicWrite(path, markdown);
     return { order: index + 1, kind: spec.kind, title: spec.title, path: relative(paths.workDir, path), paperIds: spec.items.map((item) => item.arxivId), sha256: sha256(markdown) };
@@ -249,10 +238,12 @@ export function measureEdition(paths: DayPaths, wechatSkillDir: string): Edition
     if (sha256(markdown) !== article.sha256) throw new Error(`Article changed after build: ${article.path}`);
     // The CLI itself runs under Bun. Reuse that executable instead of asking npx
     // to resolve Bun on every article render (which makes offline runs flaky).
-    const result = spawnSync(process.execPath, [renderer, markdownPath], { encoding: "utf8", cwd: dirname(markdownPath) });
+    const result = spawnSync(process.execPath, [renderer, markdownPath, "--no-cite"], { encoding: "utf8", cwd: dirname(markdownPath) });
     if (result.status !== 0) throw new Error(`Failed to render ${basename(markdownPath)}: ${result.stderr.trim()}`);
     const rendered = JSON.parse(result.stdout) as { htmlPath: string };
-    const html = extractRenderedContent(readFileSync(rendered.htmlPath, "utf8"));
+    const document = readFileSync(rendered.htmlPath, "utf8");
+    atomicWrite(markdownPath.replace(/\.md$/, ".html"), document);
+    const html = extractRenderedContent(document);
     article.renderedCharacters = html.length;
   }
   edition.measuredAt = new Date().toISOString();

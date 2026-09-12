@@ -14,6 +14,6 @@
     "targetRenderedCharacters": 100000,
     "maxRenderedCharacters": 100000,
     "maxArticlesPerEdition": 30,
-    "maxPapersPerEdition": 50
+    "maxPapersPerEdition": 40
   }
 }
