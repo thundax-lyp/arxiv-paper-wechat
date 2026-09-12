@@ -56,7 +56,7 @@
 | `$imagegen` 不可用或生成失败 | 停止封面阶段并报告；不要静默改用需要 API Key 的 CLI fallback，也不要用占位图。 |
 | 封面格式、尺寸或 21:9 校验失败 | 重新生成或裁切成品，再运行 `cover validate`。换图后旧 `cover.json` 自动失效。 |
 | 微信硬上限为 `null` | 只允许 build/measure；validate/publish 必须停止，等待真实接口实测配置。 |
-| 单篇文章超限 | 根据测量报告语义缩减对应 `copy.json` 内容，重新 build → measure → validate；禁止字符串硬截断。 |
+| 单篇文章超限 | 先确认 CLI 已按保守源长度自动拆分；若仍超 100,000 个真实渲染字符，再根据测量报告语义缩减对应 `copy.json` 内容，重新 build → measure → validate；禁止字符串硬截断。 |
 | 单个论文块本身超限 | 只缩减该论文发布文案；不得删论文或修改完整 `editorial.json`。 |
 | 稿件数量超过多图文上限 | 优先压缩文案以重新分篇；仍无法满足时停止并报告，禁止丢稿。 |
 

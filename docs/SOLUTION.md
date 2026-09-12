@@ -166,9 +166,9 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
 
 完整 `editorial.json` 不受公众号字数限制影响。发布文案单独保存到 `.work/yyyyMMdd/copy.json`，LLM 可以根据代码给出的预算和超限报告进行语义缩减，但不得修改完整编辑结果。
 
-`edition build` 按方向、评分和 arXiv ID 稳定排序，先生成精选主稿，再将其余论文按方向和容量组织成多篇文章。单篇论文是不可拆分的内容块。脚本不得从字符串中间硬截断；单个内容块超限时必须交给 Skill 缩减后重建。
+`edition build` 按方向、评分和 arXiv ID 稳定排序，先生成精选主稿，再将其余论文按方向和容量组织成多篇文章。全览使用保守源长度自动分篇，`edition measure` 必须通过真实微信公众号渲染器逐篇判断，硬上限为 100,000 字符。单篇论文是不可拆分的内容块。脚本不得从字符串中间硬截断；单个内容块超限时必须交给 Skill 缩减后重建。
 
-成稿结构与写作要求固化在 [稿件质量与编排规范](../.agents/skills/arxiv-paper-wechat/references/publication-policy.md)。精选只从总分 `>=7` 的论文中取前 4 篇，不足时宁缺毋滥；全览覆盖全部保留论文。`copy.json` 不使用整段自由正文，而是分别保存研究问题、方法、创新、训练、结果、点评和推荐理由。CLI 据此确定性生成方向总览表、分组章节、作者机构、评分及论文/代码链接，防止容量缩减破坏关键证据链。
+成稿结构与写作要求固化在 [稿件质量与编排规范](../.agents/skills/arxiv-paper-wechat/references/publication-policy.md)。发布稿总收录量最多 50 篇，按总分降序、arXiv ID 稳定选择；完整编辑结果仍保留全部 `keep` 判断。精选只从已选的总分 `>=7` 论文中取前 4 篇，不足时宁缺毋滥；每篇全览最多 30 篇。`copy.json` 不使用整段自由正文，而是分别保存研究问题、方法、创新、训练、结果、点评和推荐理由。CLI 据此确定性生成方向总览表、分组章节、作者机构、评分及论文/代码链接，防止容量缩减破坏关键证据链。
 
 `edition measure` 使用 `baoyu-post-to-wechat` 的真实 Markdown 渲染路径计算最终 HTML 容量。`edition validate` 必须检查：
 
@@ -221,9 +221,10 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
   "retryDelayMs": 2000,
   "pdfRetentionDays": 30,
   "wechat": {
-    "targetRenderedCharacters": null,
-    "maxRenderedCharacters": null,
-    "maxArticlesPerEdition": null
+    "targetRenderedCharacters": 100000,
+    "maxRenderedCharacters": 100000,
+    "maxArticlesPerEdition": 30,
+    "maxPapersPerEdition": 50
   }
 }
 ```
@@ -251,7 +252,7 @@ PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML �
 8. `editorial.json` 覆盖当天全部论文；drop 有理由，keep 有完整字段且总分由代码复算。
 9. 完整编辑结果不因发布限制被截断，缩减内容仅存在于发布工作区和最终稿件归档。
 10. 稿件集能按最终 HTML 硬上限分篇；未配置实测边界或任一文章超限时禁止发布。
-11. 精选稿最多 4 篇且不以低分稿补位；全览无遗漏，所有文章具有固定总览表和完整的研究问题—方法—证据—点评结构。
+11. 发布稿总收录量最多 50 篇；精选稿最多 4 篇且不以低分稿补位；每篇全览最多 30 篇、全览无遗漏，所有文章具有固定总览表和完整的研究问题—方法—证据—点评结构。
 12. 封面由 Codex `$imagegen` Skill 生成；格式、最小尺寸、21:9 比例和内容指纹未经 CLI 验证时不能构建稿件集。
 13. 微信成功后只产生一个 `draft_created` 稿件集归档；本地归档失败可凭原 media ID 协调恢复且不会重复发稿。
 14. Git 不包含 PDF、临时文件、工作区或微信密钥，但包含列表、最终 Markdown、编辑结果和已发稿件。

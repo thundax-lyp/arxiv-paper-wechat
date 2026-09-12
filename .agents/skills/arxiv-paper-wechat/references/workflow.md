@@ -88,7 +88,7 @@ npx -y bun "$CLI" editorial validate --date 20260911
 
 生成前必须完整阅读 [publication-policy.md](publication-policy.md)。CLI 会确定性生成总览表、方向分组和固定正文结构；LLM 只提供忠于 `editorial.json` 的精炼字段。
 
-`.work/yyyyMMdd/copy.json` 只包含保留论文，每篇恰好一次：
+`.work/yyyyMMdd/copy.json` 保存全部保留论文，每篇恰好一次；发布时 CLI 按总分降序、arXiv ID 稳定选取最多 50 篇。精选最多 4 篇；每篇全览最多 30 篇论文，由 CLI 按保守源长度自动拆分，随后必须通过真实微信公众号渲染器逐篇确认不超过 100,000 字符：
 
 ```json
 {
@@ -97,7 +97,7 @@ npx -y bun "$CLI" editorial validate --date 20260911
   "papers": [
     {
       "arxivId": "2609.12345",
-      "title": "中文标题",
+      "title": "英文原标题的简洁中文翻译",
       "summary": "研究问题与结论",
       "critique": "优点、局限与可信度",
       "method": "方法或系统结构",
@@ -110,7 +110,7 @@ npx -y bun "$CLI" editorial validate --date 20260911
 }
 ```
 
-所有字段均为必填且不得使用占位语。精选稿由 CLI 从总分 `>=7` 的论文中最多取 4 篇；全览稿覆盖全部保留论文。两类稿件都含 `方向 | 序号 | 论文 | 评分 | 关键词` 总览表，并按方向组织完整正文。
+所有字段均为必填且不得使用占位语。精选稿由 CLI 从已选的总分 `>=7` 论文中最多取 4 篇；全览稿覆盖最多 50 篇的发布选择。两类稿件都含 `方向 | 序号 | 论文 | 评分 | 关键词` 总览表，并按方向组织完整正文。
 
 ## 封面
 
