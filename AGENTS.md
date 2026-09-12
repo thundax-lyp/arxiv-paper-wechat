@@ -23,6 +23,12 @@
 
 不要提交凭据、PDF、`.part`、`.tmp` 或 `.work/`。不要删除或覆盖与当前任务无关的用户文件。
 
+## 提交规则
+
+暂存、提交或处理提交历史前，读取并遵守 [Commit Rules](docs/COMMIT-RULES.md)。已读取且未变化的规则可以复用，不必每轮重读。
+
+修改完成后默认保留工作区；用户明确要求提交时，按工程判断组织提交，使用已登记工程名和中文提交说明。提交、推送、创建 PR 和合并分别对应用户授权，已有明确的组合授权不重复确认。
+
 ## 验证
 
 变更后至少运行：
@@ -35,5 +41,7 @@ git diff --check
 修改主 Skill 时还要运行：
 
 ```bash
-python3 /Users/thundax/.codex/skills/.system/skill-creator/scripts/quick_validate.py .agents/skills/arxiv-paper-wechat
+python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .agents/skills/arxiv-paper-wechat
 ```
+
+若 Skill 校验脚本不在上述位置，先定位当前环境安装的 `skill-creator/scripts/quick_validate.py`；不得把其他机器的绝对路径写入仓库规则。
