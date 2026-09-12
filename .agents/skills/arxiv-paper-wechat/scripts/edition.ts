@@ -138,13 +138,13 @@ function estimate(block: CopyItem): number {
     + block.innovation.length + block.training.length + block.results.length + block.recommendation.length + 520;
 }
 
-function chunkByBudget(items: CopyItem[], budget: number): CopyItem[][] {
+function chunkByBudget(items: CopyItem[], budget: number, maxItems = Number.MAX_SAFE_INTEGER): CopyItem[][] {
   const chunks: CopyItem[][] = [];
   let current: CopyItem[] = [];
   let size = 0;
   for (const item of items) {
     const itemSize = estimate(item);
-    if (current.length && size + itemSize > budget) {
+    if (current.length && (size + itemSize > budget || current.length >= maxItems)) {
       chunks.push(current);
       current = [];
       size = 0;
@@ -159,13 +159,15 @@ function chunkByBudget(items: CopyItem[], budget: number): CopyItem[][] {
 export function buildEdition(config: AppConfig, paths: DayPaths, coverPath?: string): EditionDocument {
   const list = readJson<PaperList>(paths.list);
   const editorial = readJson<EditorialDocument>(paths.editorial);
-  const kept = editorial.papers.filter((paper) => paper.decision === "keep").sort((a, b) => {
+  const allKept = editorial.papers.filter((paper) => paper.decision === "keep");
+  const selectedIds = new Set(selectForPublication(allKept, config.wechat.maxPapersPerEdition).map((paper) => paper.arxivId));
+  const kept = allKept.filter((paper) => selectedIds.has(paper.arxivId)).sort((a, b) => {
     const direction = DIRECTIONS.indexOf(a.direction!) - DIRECTIONS.indexOf(b.direction!);
     const score = (b.score?.total ?? 0) - (a.score?.total ?? 0);
     return direction || score || a.arxivId.localeCompare(b.arxivId);
   });
   if (!kept.length) throw new Error("There are no kept papers to publish");
-  const copy = loadCopy(paths, kept);
+  const copy = loadCopy(paths, allKept);
   const paperById = new Map(list.papers.map((paper) => [paper.arxivId, paper]));
   const editById = new Map(kept.map((paper) => [paper.arxivId, paper]));
   const copyById = new Map(copy.papers.map((paper) => [paper.arxivId, paper]));
@@ -173,10 +175,15 @@ export function buildEdition(config: AppConfig, paths: DayPaths, coverPath?: str
   const featured = selectFeatured(kept);
   const featuredIds = new Set(featured.map((paper) => paper.arxivId));
   const featuredCopy = kept.filter((paper) => featuredIds.has(paper.arxivId)).map((paper) => copyById.get(paper.arxivId)!);
-  const target = config.wechat.targetRenderedCharacters ?? Number.MAX_SAFE_INTEGER;
+  // The WeChat renderer expands Markdown substantially. Reserve enough room
+  // for that expansion, then let `edition measure` make the final decision.
+  const hard = config.wechat.maxRenderedCharacters;
+  const target = hard === null
+    ? (config.wechat.targetRenderedCharacters ?? Number.MAX_SAFE_INTEGER)
+    : Math.min(config.wechat.targetRenderedCharacters ?? hard, Math.floor(hard / 6));
   const articleSpecs: Array<{ kind: "featured" | "overview"; title: string; items: CopyItem[] }> = [];
   if (featuredCopy.length) articleSpecs.push({ kind: "featured", title: `arXiv Agent 与大模型研究简报｜${displayDay(paths.key)}｜精选`, items: featuredCopy });
-  const overviewChunks = chunkByBudget(orderedCopy, target);
+  const overviewChunks = chunkByBudget(orderedCopy, target, 30);
   overviewChunks.forEach((items, index) => articleSpecs.push({
     kind: "overview",
     title: `arXiv Agent 与大模型研究简报｜${displayDay(paths.key)}｜论文全览${overviewChunks.length > 1 ? ` ${index + 1}/${overviewChunks.length}` : ""}`,
@@ -218,6 +225,14 @@ export function selectFeatured(items: EditorialItem[]): EditorialItem[] {
   }).slice(0, 4);
 }
 
+export function selectForPublication(items: EditorialItem[], limit: number | null): EditorialItem[] {
+  const ordered = [...items].sort((a, b) => {
+    const score = (b.score?.total ?? 0) - (a.score?.total ?? 0);
+    return score || a.arxivId.localeCompare(b.arxivId);
+  });
+  return limit === null ? ordered : ordered.slice(0, limit);
+}
+
 function extractRenderedContent(html: string): string {
   return html.match(/<div id="output">([\s\S]*?)<\/div>\s*<\/body>/i)?.[1]
     ?? html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1]
@@ -254,10 +269,11 @@ export function validateEdition(config: AppConfig, paths: DayPaths, persist = tr
   if (edition.articles.length > maxArticles) throw new Error(`Edition has ${edition.articles.length} articles; hard limit is ${maxArticles}`);
   const editorial = readJson<EditorialDocument>(paths.editorial);
   const keptItems = editorial.papers.filter((paper) => paper.decision === "keep");
-  const kept = keptItems.map((paper) => paper.arxivId).sort();
+  const publishedItems = selectForPublication(keptItems, config.wechat.maxPapersPerEdition);
+  const kept = publishedItems.map((paper) => paper.arxivId).sort();
   const overview = edition.articles.filter((article) => article.kind === "overview").flatMap((article) => article.paperIds).sort();
   if (JSON.stringify(overview) !== JSON.stringify(kept)) throw new Error("Overview articles do not cover every kept paper exactly once");
-  const expectedFeatured = selectFeatured(keptItems).map((paper) => paper.arxivId).sort();
+  const expectedFeatured = selectFeatured(publishedItems).map((paper) => paper.arxivId).sort();
   const actualFeatured = edition.articles.filter((article) => article.kind === "featured").flatMap((article) => article.paperIds).sort();
   if (JSON.stringify(actualFeatured) !== JSON.stringify(expectedFeatured)) throw new Error("Featured article does not match the top four qualifying papers");
   for (const article of edition.articles) {

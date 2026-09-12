@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { AppConfig, arxivHeading, atomicJson, dayKey, nextWeekday, pathsFor, resolveTargetDate } from "./core";
 import { commitEditorial, EditorialItem, validateEditorial } from "./editorial";
-import { buildEdition, measureEdition, selectFeatured, validateEdition } from "./edition";
+import { buildEdition, measureEdition, selectFeatured, selectForPublication, validateEdition } from "./edition";
 import {
   commitScreening, crawl, downloadAll, downloadPaper, PaperList, paperFileStem, parseArxivPage, parseCatchupPage, validateScreening,
 } from "./papers";
@@ -25,7 +25,7 @@ function fixture(limits = true): { root: string; config: AppConfig } {
     workspaceDirectory: join(root, ".work"), startDate: "20260907",
     categories: ["cs.AI", "cs.CL", "cs.MA"], listPageSize: 50,
     downloadConcurrency: 4, convertConcurrency: 2, maxRetries: 3, retryDelayMs: 1, pdfRetentionDays: 30,
-    wechat: { targetRenderedCharacters: limits ? 5000 : null, maxRenderedCharacters: limits ? 10000 : null, maxArticlesPerEdition: limits ? 8 : null },
+    wechat: { targetRenderedCharacters: limits ? 5000 : null, maxRenderedCharacters: limits ? 10000 : null, maxArticlesPerEdition: limits ? 8 : null, maxPapersPerEdition: limits ? 50 : null },
   } };
 }
 
@@ -208,6 +208,8 @@ test("edition is rendered through the real WeChat path before promotion", () => 
   expect(markdown).toContain("## 📋 本期总览");
   expect(markdown).toContain("| 方向 | 序号 | 论文 | 评分 | 关键词 |");
   expect(markdown).toContain("## 🧾 精选规则");
+  expect(markdown).toContain("### [1] 工具智能体");
+  expect(markdown).toContain("> **原标题：** Tool Agent");
   expect(markdown).toContain("**📊 结果与证据**");
   expect(markdown).toContain("**🧐 编辑点评**");
   expect(() => validateEdition(config, paths)).toThrow("has not been measured");
@@ -217,11 +219,21 @@ test("edition is rendered through the real WeChat path before promotion", () => 
 });
 
 test("featured selection is selective, score ordered, and capped at four", () => {
-  const items = [7, 10, 8, 9, 7, 6].map((total, index): EditorialItem => ({
+  const items = Array.from({ length: 35 }, (_, index): EditorialItem => ({
     arxivId: `2609.0000${index}`, decision: "keep", tags: ["agent"], direction: "Agent系统与工具使用",
-    score: { novelty: 0, impact: 0, evidence: 0, audienceFit: 0, total },
+    score: { novelty: 0, impact: 0, evidence: 0, audienceFit: 0, total: 40 - index },
   }));
-  expect(selectFeatured(items).map((item) => item.score?.total)).toEqual([10, 9, 8, 7]);
+  expect(selectFeatured(items)).toHaveLength(4);
+  expect(selectFeatured(items).map((item) => item.score?.total)).toEqual([40, 39, 38, 37]);
+});
+
+test("publication selection takes the score-ordered top fifty", () => {
+  const items = Array.from({ length: 55 }, (_, index): EditorialItem => ({
+    arxivId: `2609.${String(index).padStart(5, "0")}`, decision: "keep", tags: ["agent"], direction: "Agent系统与工具使用",
+    score: { novelty: 0, impact: 0, evidence: 0, audienceFit: 0, total: 55 - index },
+  }));
+  expect(selectForPublication(items, 50)).toHaveLength(50);
+  expect(selectForPublication(items, 50).at(-1)?.score?.total).toBe(6);
 });
 
 test("unknown WeChat limits fail closed", () => {

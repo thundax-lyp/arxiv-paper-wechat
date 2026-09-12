@@ -6,6 +6,7 @@ export interface WechatLimits {
   targetRenderedCharacters: number | null;
   maxRenderedCharacters: number | null;
   maxArticlesPerEdition: number | null;
+  maxPapersPerEdition: number | null;
 }
 
 export interface AppConfig {
@@ -138,6 +139,7 @@ export function loadConfig(path = "arxiv-paper-wechat.config.json"): AppConfig {
       targetRenderedCharacters: nullableLimit(limits.targetRenderedCharacters, "wechat.targetRenderedCharacters"),
       maxRenderedCharacters: nullableLimit(limits.maxRenderedCharacters, "wechat.maxRenderedCharacters"),
       maxArticlesPerEdition: nullableLimit(limits.maxArticlesPerEdition, "wechat.maxArticlesPerEdition"),
+      maxPapersPerEdition: nullableLimit(limits.maxPapersPerEdition, "wechat.maxPapersPerEdition"),
     },
   };
 }

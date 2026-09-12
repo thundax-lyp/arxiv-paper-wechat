@@ -11,8 +11,9 @@
   "retryDelayMs": 2000,
   "pdfRetentionDays": 30,
   "wechat": {
-    "targetRenderedCharacters": 104888,
-    "maxRenderedCharacters": 104888,
-    "maxArticlesPerEdition": 2
+    "targetRenderedCharacters": 100000,
+    "maxRenderedCharacters": 100000,
+    "maxArticlesPerEdition": 30,
+    "maxPapersPerEdition": 50
   }
 }
