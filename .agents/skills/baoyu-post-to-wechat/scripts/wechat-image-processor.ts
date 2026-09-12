@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Jimp, JimpMime } from "jimp";
-import decodeWebp, { init as initWebpDecode } from "@jsquash/webp/decode.js";
 
 export interface WechatUploadAsset {
   buffer: Buffer;
@@ -86,6 +85,7 @@ export function detectImageFormatFromBuffer(buffer: Buffer): { contentType: stri
 }
 
 let webpDecoderReady: Promise<void> | undefined;
+let decodeWebp: ((buffer: Buffer) => Promise<{ data: Uint8Array; width: number; height: number }>) | undefined;
 
 type JimpImage = Awaited<ReturnType<typeof Jimp.read>>;
 
@@ -127,11 +127,18 @@ export function needsWechatBodyImageProcessing(asset: WechatUploadAsset): boolea
 async function ensureWebpDecoder(): Promise<void> {
   if (!webpDecoderReady) {
     webpDecoderReady = (async () => {
+      let webp: typeof import("@jsquash/webp/decode.js");
+      try {
+        webp = await import("@jsquash/webp/decode.js");
+      } catch {
+        throw new Error("WebP conversion requires the optional @jsquash/webp dependency; provide PNG or JPEG instead.");
+      }
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const wasmPath = path.resolve(__dirname, "node_modules/@jsquash/webp/codec/dec/webp_dec.wasm");
       const wasmModule = await WebAssembly.compile(await fs.readFile(wasmPath));
-      await initWebpDecode(wasmModule, {});
+      await webp.init(wasmModule, {});
+      decodeWebp = webp.default as typeof decodeWebp;
     })();
   }
 
@@ -144,7 +151,7 @@ async function loadImageForProcessing(asset: WechatUploadAsset): Promise<JimpIma
 
   if (fileExt === ".webp" || normalizedMimeType === "image/webp") {
     await ensureWebpDecoder();
-    const decoded = await decodeWebp(asset.buffer);
+    const decoded = await decodeWebp!(asset.buffer);
     return new Jimp({
       data: Buffer.from(decoded.data.buffer, decoded.data.byteOffset, decoded.data.byteLength),
       width: decoded.width,
