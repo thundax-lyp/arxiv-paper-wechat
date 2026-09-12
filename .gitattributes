@@ -1,0 +1,2 @@
+# Published Markdown preserves two trailing spaces where WeChat requires a hard line break.
+repositories/publications/**/articles/*.md -whitespace
