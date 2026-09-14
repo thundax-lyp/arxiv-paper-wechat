@@ -35,7 +35,7 @@ export function prepareCover(paths: DayPaths): CoverBrief {
   const kept = editorial.papers.filter((paper) => paper.decision === "keep").sort((a, b) => (b.score?.total ?? 0) - (a.score?.total ?? 0) || a.arxivId.localeCompare(b.arxivId));
   if (!kept.length) throw new Error("There are no kept papers for a cover brief");
   const selected = kept.filter((paper) => (paper.score?.total ?? 0) >= 7);
-  const focus = (selected.length ? selected : kept).slice(0, 4);
+  const focus = (selected.length ? selected : kept).slice(0, 6);
   const brief: CoverBrief = {
     schemaVersion: 1,
     sourceDate: paths.key,

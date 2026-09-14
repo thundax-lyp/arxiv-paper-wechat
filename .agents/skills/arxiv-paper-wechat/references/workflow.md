@@ -88,7 +88,7 @@ npx -y bun "$CLI" editorial validate --date 20260911
 
 生成前必须完整阅读 [publication-policy.md](publication-policy.md)。LLM 独立撰写全览与精选；CLI 负责主题分组、论文标题、末尾链接和按容量分篇，不生成固定七栏或目录表。
 
-`.work/yyyyMMdd/copy.json` 保存全部 `keep` 论文，每篇恰好一次。CLI 按总分降序、arXiv ID 稳定选择最多 40 篇，并从其中总分 `>=7` 的论文取前 4 篇精选：
+`.work/yyyyMMdd/copy.json` 保存全部 `keep` 论文，每篇恰好一次。CLI 按总分降序、arXiv ID 稳定选择最多 40 篇，并从其中总分 `>=7` 的论文取前 6 篇精选：
 
 ```json
 {
@@ -100,13 +100,18 @@ npx -y bun "$CLI" editorial validate --date 20260911
       "title": "突出具体问题或发现的中文标题",
       "recommendationLevel": 3,
       "overview": "独立撰写的紧凑短段落：问题、方法、发现及重要限制。",
-      "featured": "独立撰写的深入解读：背景、方法直觉、结果含义、阅读价值与具体限制。"
+      "featuredProblem": "精选专属：一句界定具体研究或实践缺口。",
+      "featuredConclusion": "精选专属：一句给出关键发现，以及必要条件或代价。",
+      "featuredInnovation": "精选专属：一句说明相较已有工作的真实改变。",
+      "featured": "精选专属的深入解读：背景、方法直觉、结果含义与具体限制。",
+      "featuredCommentary": "精选专属：证据支持到哪里、主要边界或风险。",
+      "featuredWhyRead": "精选专属：对研究、系统或评测的具体启发。"
     }
   ]
 }
 ```
 
-`sourceDate`、`intro`、`papers` 及每篇的 `arxivId`、纯文本 `title`、`recommendationLevel`（整数 1–3）、`overview` 必填且不得为占位语。只有实际进入精选的论文必须提供 `featured`；它不得与 `overview` 整段相同。正文可使用段落，精选必要时可用四级小标题；字数参考和语义质量由 LLM 按发布规范复核，CLI 不机械截断或按字数拒绝。
+`sourceDate`、`intro`、`papers` 及每篇的 `arxivId`、纯文本 `title`、`recommendationLevel`（整数 1–3）、`overview` 必填且不得为占位语。只有实际进入精选的论文必须提供 `featuredProblem`、`featuredConclusion`、`featuredInnovation`、`featured`、`featuredCommentary` 和 `featuredWhyRead`；`featured` 不得与 `overview` 整段相同。CLI 仅在精选稿渲染这些字段，按“问题、结论、新意 → 深入解读 → 编辑点评、为什么值得读”的顺序输出；全览只输出 `overview`。正文可使用段落，精选必要时可用四级小标题；字数参考和语义质量由 LLM 按发布规范复核，CLI 不机械截断或按字数拒绝。
 
 可选 `codeLinkReason` 仅在仓库本身是解读核心时填写，必须对应已核实的 `editorial.json.codeUrl`；它不进入发布正文。默认唯一入口为 CLI 插入的“阅读论文 PDF”，不在文案内手写链接。
 

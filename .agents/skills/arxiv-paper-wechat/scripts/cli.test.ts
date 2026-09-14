@@ -56,7 +56,12 @@ function prepareDay(config: AppConfig) {
       arxivId: "2609.12345", title: "工具执行后如何发现错误",
       recommendationLevel: 3,
       overview: "工具调用成功不代表任务完成。该研究在执行后检查状态，并在发现偏差时修正后续动作。公开任务上的表现优于所列基线，但实验没有覆盖真实用户的长程任务。",
+      featuredProblem: "工具返回成功时，智能体仍可能误判任务状态。",
+      featuredConclusion: "执行后核对实际状态能在所测公开任务中减少错误延续，但未覆盖真实用户的长程任务。",
+      featuredInnovation: "把状态核对纳入执行过程，而非只根据工具返回判断成功。",
       featured: "工具返回成功时，智能体仍可能误判任务状态。研究让系统先执行动作，再比较实际状态和目标，出现偏差时调整下一步。\n\n这种检查把错误处理放回执行过程。公开任务结果支持它在所测场景中的作用，但不能据此推断真实用户的长程任务也会改善；阅读时值得关注状态检查如何定义成功。",
+      featuredCommentary: "公开任务结果支持该机制，但尚不足以证明真实长程任务同样改善。",
+      featuredWhyRead: "它为工具型智能体提供了可直接采用的执行后状态诊断思路。",
     }],
   });
   const png = Buffer.alloc(24);
@@ -209,6 +214,12 @@ test("edition is rendered through the real WeChat path before promotion", () => 
   const copy = JSON.parse(readFileSync(paths.copy, "utf8")).papers[0];
   const overview = readFileSync(join(paths.workDir, pending.articles[1].path), "utf8");
   expect(markdown).toContain(copy.featured);
+  for (const label of ["**问题**：", "**结论**：", "**新意**：", "**编辑点评**：", "**为什么值得读**："]) expect(markdown).toContain(label);
+  for (const label of ["**问题**：", "**结论**：", "**新意**：", "**编辑点评**：", "**为什么值得读**："]) expect(overview).not.toContain(label);
+  const featuredSections = ["**问题**：", "**结论**：", "**新意**：", copy.featured, "**编辑点评**：", "**为什么值得读**："];
+  for (let index = 1; index < featuredSections.length; index++) {
+    expect(markdown.indexOf(featuredSections[index])).toBeGreaterThan(markdown.indexOf(featuredSections[index - 1]));
+  }
   expect(markdown).not.toContain(copy.overview);
   expect(overview).toContain(copy.overview);
   expect(overview).not.toContain(copy.featured);
@@ -233,13 +244,19 @@ test("edition is rendered through the real WeChat path before promotion", () => 
   expect(validateEdition(config, paths)).toMatchObject({ valid: true, articleCount: 2 });
 });
 
-test("featured selection is selective, score ordered, and capped at four", () => {
+test("featured selection is selective, score ordered, and capped at six", () => {
   const items = Array.from({ length: 35 }, (_, index): EditorialItem => ({
     arxivId: `2609.0000${index}`, decision: "keep", tags: ["agent"], direction: "Agent系统与工具使用",
     score: { novelty: 0, impact: 0, evidence: 0, audienceFit: 0, total: 40 - index },
   }));
-  expect(selectFeatured(items)).toHaveLength(4);
-  expect(selectFeatured(items).map((item) => item.score?.total)).toEqual([40, 39, 38, 37]);
+  expect(selectFeatured(items)).toHaveLength(6);
+  expect(selectFeatured(items).map((item) => item.score?.total)).toEqual([40, 39, 38, 37, 36, 35]);
+  const boundaryItems: EditorialItem[] = [6, 7, 8, 7].map((total, index) => ({
+    arxivId: `2609.${String(index).padStart(5, "0")}`, decision: "keep", tags: ["agent"],
+    score: { novelty: 2, impact: total - 5, evidence: 1, audienceFit: 2, total },
+  }));
+  expect(selectFeatured(boundaryItems.reverse()).map((item) => item.arxivId)).toEqual(["2609.00002", "2609.00001", "2609.00003"]);
+  expect(selectFeatured(boundaryItems.filter((item) => item.score!.total < 7))).toEqual([]);
 });
 
 test("publication selection takes the score-ordered top fifty", () => {
@@ -294,6 +311,16 @@ test("copy requires independent featured prose and rejects legacy-only copy", ()
   copy.papers[0].featured = copy.papers[0].overview;
   atomicJson(paths.copy, copy);
   expect(() => buildEdition(config, paths)).toThrow("independently written");
+  copy.papers[0].featured = "独立撰写的精选解读。";
+  for (const field of ["featuredProblem", "featuredConclusion", "featuredInnovation", "featuredCommentary", "featuredWhyRead"]) {
+    const original = copy.papers[0][field];
+    for (const invalid of [undefined, "   "]) {
+      copy.papers[0][field] = invalid;
+      atomicJson(paths.copy, copy);
+      expect(() => buildEdition(config, paths)).toThrow(`.${field} is required`);
+    }
+    copy.papers[0][field] = original;
+  }
   delete copy.papers[0].overview;
   copy.papers[0].summary = "Legacy summary";
   atomicJson(paths.copy, copy);

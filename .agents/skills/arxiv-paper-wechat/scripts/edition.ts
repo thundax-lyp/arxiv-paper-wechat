@@ -12,6 +12,11 @@ export interface CopyItem {
   recommendationLevel: 1 | 2 | 3;
   overview: string;
   featured?: string;
+  featuredProblem?: string;
+  featuredConclusion?: string;
+  featuredInnovation?: string;
+  featuredCommentary?: string;
+  featuredWhyRead?: string;
   codeLinkReason?: string;
 }
 
@@ -73,6 +78,11 @@ export function loadCopy(paths: DayPaths, kept: EditorialItem[], selected: Edito
       if (item.featured.replace(/\s/g, "") === item.overview.replace(/\s/g, "")) {
         throw new Error(`${item.arxivId}.featured must be independently written`);
       }
+      item.featuredProblem = requireText(item.featuredProblem, `${item.arxivId}.featuredProblem`);
+      item.featuredConclusion = requireText(item.featuredConclusion, `${item.arxivId}.featuredConclusion`);
+      item.featuredInnovation = requireText(item.featuredInnovation, `${item.arxivId}.featuredInnovation`);
+      item.featuredCommentary = requireText(item.featuredCommentary, `${item.arxivId}.featuredCommentary`);
+      item.featuredWhyRead = requireText(item.featuredWhyRead, `${item.arxivId}.featuredWhyRead`);
     }
     if (item.codeLinkReason !== undefined) {
       item.codeLinkReason = requireText(item.codeLinkReason, `${item.arxivId}.codeLinkReason`);
@@ -111,7 +121,10 @@ function articleMarkdown(
     }
     const links = [`[阅读论文 PDF](${paper.pdfUrl})`];
     if (copy.codeLinkReason && editorial.codeUrl) links.push(`[代码](${editorial.codeUrl})`);
-    sections.push(`### ${copy.title}\n\n${plainMarkdown(requireText(paper.title, `${paper.arxivId}.originalTitle`))}\n\n${"🌟".repeat(copy.recommendationLevel)}\n\n${kind === "featured" ? copy.featured! : copy.overview}\n\n${links.join(" · ")}`);
+    const prose = kind === "featured"
+      ? `**问题**：${copy.featuredProblem}\n\n**结论**：${copy.featuredConclusion}\n\n**新意**：${copy.featuredInnovation}\n\n${copy.featured}\n\n**编辑点评**：${copy.featuredCommentary}\n\n**为什么值得读**：${copy.featuredWhyRead}`
+      : copy.overview;
+    sections.push(`### ${copy.title}\n\n${plainMarkdown(requireText(paper.title, `${paper.arxivId}.originalTitle`))}\n\n${"🌟".repeat(copy.recommendationLevel)}\n\n${prose}\n\n${links.join(" · ")}`);
   }
   const legend = showLegend ? "\n\n阅读推荐：🌟 值得关注；🌟🌟 建议阅读；🌟🌟🌟 优先精读。星标表示本期阅读优先级，不代表研究结论的可靠程度。" : "";
   const scope = kind === "overview" ? "\n\n本期入选论文全览。" : "";
@@ -211,7 +224,7 @@ export function selectFeatured(items: EditorialItem[]): EditorialItem[] {
   return items.filter((paper) => (paper.score?.total ?? 0) >= 7).sort((a, b) => {
     const score = (b.score?.total ?? 0) - (a.score?.total ?? 0);
     return score || a.arxivId.localeCompare(b.arxivId);
-  }).slice(0, 4);
+  }).slice(0, 6);
 }
 
 export function selectForPublication(items: EditorialItem[], limit: number | null): EditorialItem[] {
@@ -266,7 +279,7 @@ export function validateEdition(config: AppConfig, paths: DayPaths, persist = tr
   if (JSON.stringify(overview) !== JSON.stringify(kept)) throw new Error("Overview articles do not cover every kept paper exactly once");
   const expectedFeatured = selectFeatured(publishedItems).map((paper) => paper.arxivId).sort();
   const actualFeatured = edition.articles.filter((article) => article.kind === "featured").flatMap((article) => article.paperIds).sort();
-  if (JSON.stringify(actualFeatured) !== JSON.stringify(expectedFeatured)) throw new Error("Featured article does not match the top four qualifying papers");
+  if (JSON.stringify(actualFeatured) !== JSON.stringify(expectedFeatured)) throw new Error("Featured article does not match the top six qualifying papers");
   for (const article of edition.articles) {
     const path = resolve(paths.workDir, article.path);
     if (!existsSync(path)) throw new Error(`Article file is missing: ${path}`);
