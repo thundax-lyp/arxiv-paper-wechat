@@ -398,7 +398,7 @@ export async function convertPaper(config: AppConfig, paths: DayPaths, paper: Pa
     atomicWrite(output, markdown);
     return "converted";
   } catch (error) {
-    if (/\b404\b|no article body|produced only/i.test(error instanceof Error ? error.message : String(error))) {
+    if (/\b404\b|\b406\b|no article body|produced only/i.test(error instanceof Error ? error.message : String(error))) {
       throw new HtmlUnavailableError(paper.arxivId, `${paper.arxivId}: arXiv HTML unavailable or invalid; skipped without PDF fallback`);
     }
     throw error;

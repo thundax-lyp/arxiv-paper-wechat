@@ -145,7 +145,7 @@ arxiv-paper-wechat edition publish --date 20260911
 
 `papers convert` 从每篇论文的官方 `https://arxiv.org/html/<versioned-id>` 抓取 HTML，直接规整为 Markdown；原始 HTML 不落盘。HTML 比本地 PDF 解析更快，并保留标题、链接、公式 TeX 和图注等结构。最终 Markdown 以原子写入保存，并在 frontmatter 标记 `converter: "arxiv-html"` 和精确 `htmlUrl`。
 
-PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML 返回 404、缺少正文或转换结果异常短时，CLI 在 `list.json` 写入 `content.status: "unavailable"` 与原因，并将该论文排除在正式编辑之外；这是显式跳过，不使用 MinerU、`pdftotext`、ar5iv 或其他兜底来源。
+PDF 仍按仓储规范下载和保留，但不再参与 Markdown 转换。HTML 返回 404/406、缺少正文或转换结果异常短时，CLI 在 `list.json` 写入 `content.status: "unavailable"` 与原因，并将该论文排除在正式编辑之外；这是显式跳过，不使用 MinerU、`pdftotext`、ar5iv 或其他兜底来源。
 
 `papers ingest` 是外层总控：先完成 crawl，再启动下载池和 HTML 转换池；每篇 PDF 下载完成后立即进入转换队列，无需等待全部下载结束。默认下载并发为 4、转换并发为 4，允许配置或 CLI 覆盖。单篇任务有限重试，其他论文继续执行；存在未解决失败时总控返回非零退出码。重复运行根据 `.pdf`、`.part`、`.md` 和 HTML 可用性状态恢复。
 

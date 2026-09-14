@@ -35,7 +35,7 @@
 | 服务端不支持 Range | CLI 从头安全重写 `.part`；不要把旧分片拼接到完整响应。 |
 | `416`、长度不符或 PDF 头无效 | CLI 丢弃不再可用的分片并重试；正式 `.pdf` 不得产生。 |
 | PDF 单篇重试耗尽 | CLI 记录失败原因并按相关度从候补递补，最多取得 60 篇。候补耗尽时报告实际成功篇数和失败记录；转换与编辑只处理最终成功候选。 |
-| arXiv HTML 返回 404、缺少正文或规整后异常短 | CLI 在 `list.json` 记录 `content.status: unavailable` 与原因，并从正式编辑候选中跳过。不得改用 MinerU、`pdftotext`、ar5iv 或摘要替代正文。 |
+| arXiv HTML 返回 404/406、缺少正文或规整后异常短 | CLI 在 `list.json` 记录 `content.status: unavailable` 与原因，并从正式编辑候选中跳过。不得改用 MinerU、`pdftotext`、ar5iv 或摘要替代正文。 |
 | HTML 网络请求临时失败 | CLI 按配置有限重试；耗尽后停止本阶段并报告。不得把网络故障标为 HTML 不存在。 |
 | 磁盘满、无权限、原子改名失败 | 停止写入，保留可恢复的断点；清理空间或权限后重跑。主 Skill不得顺带删除历史 PDF。 |
 
