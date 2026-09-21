@@ -55,11 +55,30 @@ function requireText(value: unknown, name: string): string {
   return text;
 }
 
+function requireChineseProse(value: unknown, name: string): string {
+  const text = requireText(value, name);
+  if (/[A-Za-z]/.test(text)) {
+    throw new Error(`${name} must use complete Chinese prose; the English original title is rendered separately`);
+  }
+  return text;
+}
+
+const DIRECTION_LABELS: Record<string, string> = {
+  "Agent系统与工具使用": "智能体系统与工具使用",
+  "LLM推理与规划": "大模型推理与规划",
+  "RAG与知识检索": "检索增强生成与知识检索",
+  "多智能体与协作": "多智能体与协作",
+  "LLM训练与对齐": "大模型训练与对齐",
+  "评测与安全": "评测与安全",
+  "应用与基准": "应用与基准",
+  "其他 Agent / LLM 方向": "其他智能体与大模型方向",
+};
+
 export function loadCopy(paths: DayPaths, kept: EditorialItem[], selected: EditorialItem[] = kept): CopyDocument {
   if (!existsSync(paths.copy)) throw new Error(`Publication copy not found: ${paths.copy}`);
   const copy = readJson<CopyDocument>(paths.copy);
   if (copy.sourceDate.replaceAll("-", "") !== paths.key) throw new Error("copy.json sourceDate does not match target date");
-  copy.intro = requireText(copy.intro, "copy.json intro");
+  copy.intro = requireChineseProse(copy.intro, "copy.json intro");
   if (!Array.isArray(copy.papers)) throw new Error("copy.json papers must be an array");
   const expected = new Set(kept.map((paper) => paper.arxivId));
   const featuredIds = new Set(selectFeatured(selected).map((paper) => paper.arxivId));
@@ -69,20 +88,20 @@ export function loadCopy(paths: DayPaths, kept: EditorialItem[], selected: Edito
     if (!expected.has(item.arxivId)) throw new Error(`copy.json contains non-kept paper: ${item.arxivId}`);
     if (seen.has(item.arxivId)) throw new Error(`copy.json duplicates paper: ${item.arxivId}`);
     seen.add(item.arxivId);
-    item.title = requireText(item.title, `${item.arxivId}.title`);
+    item.title = requireChineseProse(item.title, `${item.arxivId}.title`);
     if (/[\r\n\[\]<>]/.test(item.title)) throw new Error(`${item.arxivId}.title must be plain text`);
     if (![1, 2, 3].includes(item.recommendationLevel)) throw new Error(`${item.arxivId}.recommendationLevel must be 1, 2, or 3`);
-    item.overview = requireText(item.overview, `${item.arxivId}.overview`);
+    item.overview = requireChineseProse(item.overview, `${item.arxivId}.overview`);
     if (featuredIds.has(item.arxivId) || item.featured !== undefined) {
-      item.featured = requireText(item.featured, `${item.arxivId}.featured`);
+      item.featured = requireChineseProse(item.featured, `${item.arxivId}.featured`);
       if (item.featured.replace(/\s/g, "") === item.overview.replace(/\s/g, "")) {
         throw new Error(`${item.arxivId}.featured must be independently written`);
       }
-      item.featuredProblem = requireText(item.featuredProblem, `${item.arxivId}.featuredProblem`);
-      item.featuredConclusion = requireText(item.featuredConclusion, `${item.arxivId}.featuredConclusion`);
-      item.featuredInnovation = requireText(item.featuredInnovation, `${item.arxivId}.featuredInnovation`);
-      item.featuredCommentary = requireText(item.featuredCommentary, `${item.arxivId}.featuredCommentary`);
-      item.featuredWhyRead = requireText(item.featuredWhyRead, `${item.arxivId}.featuredWhyRead`);
+      item.featuredProblem = requireChineseProse(item.featuredProblem, `${item.arxivId}.featuredProblem`);
+      item.featuredConclusion = requireChineseProse(item.featuredConclusion, `${item.arxivId}.featuredConclusion`);
+      item.featuredInnovation = requireChineseProse(item.featuredInnovation, `${item.arxivId}.featuredInnovation`);
+      item.featuredCommentary = requireChineseProse(item.featuredCommentary, `${item.arxivId}.featuredCommentary`);
+      item.featuredWhyRead = requireChineseProse(item.featuredWhyRead, `${item.arxivId}.featuredWhyRead`);
     }
     if (item.codeLinkReason !== undefined) {
       item.codeLinkReason = requireText(item.codeLinkReason, `${item.arxivId}.codeLinkReason`);
@@ -114,7 +133,7 @@ function articleMarkdown(
   const sections: string[] = [];
   let previousDirection = "";
   for (const { paper, editorial, copy } of blocks) {
-    const direction = editorial.direction ?? "其他 Agent / LLM 方向";
+    const direction = DIRECTION_LABELS[editorial.direction ?? "其他 Agent / LLM 方向"] ?? "其他智能体与大模型方向";
     if (direction !== previousDirection) {
       sections.push(`## ${direction}`);
       previousDirection = direction;

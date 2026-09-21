@@ -53,6 +53,7 @@
 | 现象 | 处理 |
 | --- | --- |
 | `copy.json` 漏稿、重复、存在占位语或包含 drop 论文 | 重新读取 [publication-policy.md](publication-policy.md)，依据 `editorial.json` 修正结构化字段，保证所有 keep 论文恰好一次。 |
+| `copy.json` 的中文标题、全览或精选文案复制英文摘要或夹杂英文句子 | 回读论文和编辑记录，将事实、方法、结果与限制独立改写为完整中文；英文只保留 CLI 在中文标题下方展示的 `list.json.title` 原标题，再重新 build → measure → validate。 |
 | 旧七栏文案、缺少精选必填字段、精选整段复制全览或把精选栏目写入全览 | 回读论文与内部编辑记录，独立重写 `overview` / `featured` 及精选专属短述；不拼接迁移，不修改旧成功归档。 |
 | `$imagegen` 不可用或生成失败 | 停止封面阶段并报告；不要静默改用需要 API Key 的 CLI fallback，也不要用占位图。 |
 | 封面格式、尺寸或 21:9 校验失败 | 重新生成或裁切成品，再运行 `cover validate`。换图后旧 `cover.json` 自动失效。 |

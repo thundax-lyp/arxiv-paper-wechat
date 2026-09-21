@@ -327,6 +327,19 @@ test("copy requires independent featured prose and rejects legacy-only copy", ()
   expect(() => buildEdition(config, paths)).toThrow(".overview is required");
 });
 
+test("copy keeps English only in the separately rendered original title", () => {
+  const { config } = fixture();
+  const paths = prepareDay(config);
+  const copy = JSON.parse(readFileSync(paths.copy, "utf8"));
+  copy.papers[0].title = "Tool 调用错误";
+  atomicJson(paths.copy, copy);
+  expect(() => buildEdition(config, paths)).toThrow("title must use complete Chinese prose");
+  copy.papers[0].title = "工具调用错误";
+  copy.papers[0].overview = "The agent checks state after calling a tool.";
+  atomicJson(paths.copy, copy);
+  expect(() => buildEdition(config, paths)).toThrow("overview must use complete Chinese prose");
+});
+
 test("code link is opt-in and requires an editorial URL", () => {
   const { config } = fixture();
   const paths = prepareDay(config);

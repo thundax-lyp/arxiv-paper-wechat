@@ -3,7 +3,7 @@ name: arxiv-paper-wechat
 description: "Generate an arXiv Agent and LLM research brief by collecting cs.AI, cs.CL, and cs.MA papers, reviewing local Markdown, building capacity-safe articles, and optionally creating a WeChat draft."
 license: Apache-2.0
 metadata:
-  version: 3.5.5
+  version: 3.5.6
   author: Thundax
 ---
 
@@ -32,7 +32,7 @@ npx -y bun "$CLI" publication next-date
 3. 对固定的 `sourceDate` 依次执行 `papers download` 和 `papers convert`（也可用精确日期执行 `papers ingest`），再确认 `papers status` 显示全部可编辑候选的 Markdown 完成。转换从 arXiv 官方 `https://arxiv.org/html/<versioned-id>` 直接生成 Markdown；不缓存 HTML。HTML 不存在或无有效正文时，CLI 会在 `list.json` 标为 `content.status: unavailable` 并跳过该论文；不得改用 MinerU、PDF 文本提取或其他 HTML 来源；不要删除 `.part`。
 4. **完整阅读 [references/editorial-policy.md](references/editorial-policy.md)**，并以它作为当期筛选、固定 taxonomy 和评分的唯一质量口径。随后串行阅读最终下载候选的 `repositories/papers/yyyyMMdd/markdown/*.md`，一次性生成完整编辑结果，只保留最重要的最多 40 篇，不并发调用 LLM。
 5. 将候选 JSON 写到仓库外临时文件，再执行 `editorial commit --date ... --input ...`；根据错误补齐后运行 `editorial validate`。
-6. **完整阅读 [references/publication-policy.md](references/publication-policy.md)**，生成 `.work/yyyyMMdd/copy.json`：全览 `overview` 用紧凑短段落帮助筛选；最多 6 篇精选除独立的 `featured` 深入解读外，必须填写“问题、结论、新意、编辑点评、为什么值得读”五项精选专属短述。中文标题突出具体问题或发现，下方展示英文原标题与三级 🌟 推荐度；在 `copy.json` 中填写 `recommendationLevel`，含义与证据边界遵循发布规范。发布稿不展示内部评分、核查状态或生产说明。选稿上限、篇幅参考、证据边界和链接要求以该规范为准；不得修改完整 `editorial.json`。CLI 按全览篇幅预算、尽量保持主题完整地分篇，再逐篇实测微信公众号渲染容量。
+6. **完整阅读 [references/publication-policy.md](references/publication-policy.md)**，生成 `.work/yyyyMMdd/copy.json`：全览 `overview` 用紧凑的完整中文短段落帮助筛选；中文标题也必须完整中文。英文只允许由 CLI 在每篇中文标题正下方展示 `list.json.title` 的英文原标题，文案不得复制英文摘要或夹杂英文句子。最多 6 篇精选除独立的 `featured` 深入解读外，必须填写“问题、结论、新意、编辑点评、为什么值得读”五项精选专属短述，且同样使用完整中文表达。在 `copy.json` 中填写 `recommendationLevel`，含义与证据边界遵循发布规范。发布稿不展示内部评分、核查状态或生产说明。选稿上限、篇幅参考、证据边界和链接要求以该规范为准；不得修改完整 `editorial.json`。CLI 按全览篇幅预算、尽量保持主题完整地分篇，再逐篇实测微信公众号渲染容量。
 7. 运行 `cover prepare --date ...`，读取生成的 `cover-brief.json`，加载并遵循 Codex `$imagegen` Skill，使用默认内置图片工具生成一张封面。把选定成品复制到 brief 的 `outputPath`；不要创建本地图片 API wrapper，也不要使用需要 `OPENAI_API_KEY` 的 CLI fallback。封面采用小清新的研究编辑插画：以暖白纸张、低饱和薄荷绿/天蓝/浅黄和柔和晨光为基调；把精选论文的实际主题转成少量可读的视觉隐喻，例如工具调用用模块与连线、检索与核验用资料卡/放大镜、记忆用归档卡片、多智能体协作用松散协作节点。构图保持留白、纸张或水粉质感、克制的文具感，避免深色赛博空间、发光宇宙球、密集线路和与论文无关的通用科技图标。仍不得含文字、字母、数字、logo、水印、界面截图、真实人物或手部。
 8. 运行 `cover validate --date ...`。图片必须无文字、数字、logo、水印、界面截图和真实人物，且通过 PNG/JPEG、最小尺寸与 21:9 比例硬校验；失败时重新生成或裁切后再验证。
 9. 依次运行 `edition build`、`edition measure`、`edition validate`，完成字段、覆盖、链接与实渲染容量检查。不设置额外的正文或手机排版复核关卡，不要求浏览器预览；手机阅读效果由用户在微信草稿中查看。若超限，按报告语义缩减对应论文的 `copy.json` 内容并重新执行三条命令；禁止字符串硬截断。
