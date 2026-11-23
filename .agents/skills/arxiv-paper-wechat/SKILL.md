@@ -1,9 +1,9 @@
 ---
 name: arxiv-paper-wechat
-description: "Generate an arXiv Agent and LLM research brief by collecting cs.AI, cs.CL, and cs.MA papers, reviewing local Markdown, building capacity-safe articles, and optionally creating a WeChat draft."
+description: "Generate an arXiv Agent and LLM research brief by collecting cs.AI, cs.CL, and cs.MA papers, reviewing local Markdown, building capacity-safe article previews, and optionally creating a WeChat draft."
 license: Apache-2.0
 metadata:
-  version: 3.5.6
+  version: 3.5.7
   author: Thundax
 ---
 
@@ -36,7 +36,7 @@ npx -y bun "$CLI" publication next-date
 7. 运行 `cover prepare --date ...`，读取生成的 `cover-brief.json`，加载并遵循 Codex `$imagegen` Skill，使用默认内置图片工具生成一张封面。把选定成品复制到 brief 的 `outputPath`；不要创建本地图片 API wrapper，也不要使用需要 `OPENAI_API_KEY` 的 CLI fallback。封面采用小清新的研究编辑插画：以暖白纸张、低饱和薄荷绿/天蓝/浅黄和柔和晨光为基调；把精选论文的实际主题转成少量可读的视觉隐喻，例如工具调用用模块与连线、检索与核验用资料卡/放大镜、记忆用归档卡片、多智能体协作用松散协作节点。构图保持留白、纸张或水粉质感、克制的文具感，避免深色赛博空间、发光宇宙球、密集线路和与论文无关的通用科技图标。仍不得含文字、字母、数字、logo、水印、界面截图、真实人物或手部。
 8. 运行 `cover validate --date ...`。图片必须无文字、数字、logo、水印、界面截图和真实人物，且通过 PNG/JPEG、最小尺寸与 21:9 比例硬校验；失败时重新生成或裁切后再验证。
 9. 依次运行 `edition build`、`edition measure`、`edition validate`，完成字段、覆盖、链接与实渲染容量检查。不设置额外的正文或手机排版复核关卡，不要求浏览器预览；手机阅读效果由用户在微信草稿中查看。若超限，按报告语义缩减对应论文的 `copy.json` 内容并重新执行三条命令；禁止字符串硬截断。
-10. 用户只要求生成时到此停止。用户要求推送草稿箱时，运行 `edition publish`。不得正式群发。
+10. 校验通过后，按 `edition.json` 的文章顺序交付 `.work/yyyyMMdd/articles/*.html` 本地稿件预览链接。用户只要求生成时，提供预览后结束。用户要求推送草稿箱时，运行 `edition publish`。不得正式群发。
 
 详细 JSON 结构和命令见 [references/workflow.md](references/workflow.md)。编辑阶段必须读取 [references/editorial-policy.md](references/editorial-policy.md)，成稿阶段必须读取 [references/publication-policy.md](references/publication-policy.md)；不要只依赖本文件的摘要。任何命令失败、产物状态冲突或发布结果不确定时，必须读取并遵循 [references/error-handling.md](references/error-handling.md)。
 

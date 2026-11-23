@@ -159,4 +159,4 @@ npx -y bun "$CLI" publication adopt --date 20260911 --media-id MEDIA_ID
 
 出现任何失败或状态冲突时，按 [固定异常处理与恢复规范](error-handling.md) 判断停止条件和恢复动作。
 
-渲染和草稿发布统一传入 `--no-cite`，关闭外链编号与文末重复链接汇总，保留每篇末尾的 PDF 入口。`edition measure` 在 Markdown 旁保存本次实测的 HTML，供排错留存，不作为推送前人工复核关卡。
+渲染和草稿发布统一传入 `--no-cite`，关闭外链编号与文末重复链接汇总，保留每篇末尾的 PDF 入口。`edition measure` 在 Markdown 旁保存本次实测的 HTML，供用户预览。完成校验后按稿件顺序交付这些本地 HTML 链接。
