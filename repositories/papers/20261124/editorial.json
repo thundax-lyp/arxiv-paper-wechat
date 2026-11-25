@@ -1,0 +1,1077 @@
+{
+  "schemaVersion": 1,
+  "sourceDate": "20261124",
+  "committedAt": "2026-11-25T04:12:44.103Z",
+  "papers": [
+    {
+      "arxivId": "2611.28038",
+      "decision": "keep",
+      "tags": [
+        "安全评测"
+      ],
+      "authorsOrg": "Ruyuan Wan, Adriana Alvarado Garcia, Md Toufikuzzaman, Dongwon Lee, Ting-Hao `Kenneth' Huang（当前可读正文未确认机构）",
+      "summary": "红队评测会随有害性判据改变。同一批答复下，部分裁判对哪个模型更脆弱给出反向判断。",
+      "critique": "人工参考由单人标注，覆盖一种语言和一个指令集",
+      "method": "系统梳理文献并固定模型输出比较八类判定器",
+      "innovation": "将危害定义、裁判实现和计分阈值逐层追踪",
+      "training": "无训练；76篇文献及两模型的2080条输出，其中1040条由人工标注",
+      "results": "同一批答复下，部分裁判对哪个模型更脆弱给出反向判断",
+      "recommendation": "为安全评测设计跨裁判的稳健性检查",
+      "direction": "评测与安全",
+      "codeUrl": "https://anonymous.4open.science/r/red-teaming-llms-evaluation-73EA/",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28048",
+      "decision": "keep",
+      "tags": [
+        "行为模拟"
+      ],
+      "authorsOrg": "Ruoyun Ma, Shuang Liu, Peiye Liu, Ao Qu, Baichuan Mo（当前可读正文未确认机构）",
+      "summary": "让合成问卷答复保留群体差异。相较只奖励命中的训练，分布散度在同分布和留出问题上分别下降34.5%和14.6%，逐答准确率基本持平。",
+      "critique": "只核对一阶子群边际，不能推断交叉人群或题目之间的依赖",
+      "method": "按题目与人口分组，使用预测分布和真实答复分布间的缺口计算强化学习奖励",
+      "innovation": "把群体回答频率的校准落实到单次生成的训练信号",
+      "training": "一套民意问卷数据和一个骨干模型，训练时用有限采样估计群体边际",
+      "results": "相较只奖励命中的训练，分布散度在同分布和留出问题上分别下降34.5%和14.6%，逐答准确率基本持平",
+      "recommendation": "将逐条命中、群体分布和群体差异同时纳入评测",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28050",
+      "decision": "drop",
+      "tags": [
+        "多语评测"
+      ],
+      "reason": "将译题校验和小模型的跨语种推理训练放在同一评测协议中。对原生瑞典语题的迁移不均衡，选择题成绩不能外推到临床。按新意、影响力、证据和受众匹配度分别评为1、2、1、1，综合优先级低于本期入选论文。"
+    },
+    {
+      "arxivId": "2611.28055",
+      "decision": "keep",
+      "tags": [
+        "流式推理"
+      ],
+      "authorsOrg": "Yu Pu, Zhiyun Fan, Baiji Liu, Zhifu Gao, Xiangang Li（当前可读正文未确认机构）",
+      "summary": "从离线平行文本学会何时开始翻译。三个基准低至中等延迟下改善质量与延迟的折衷。",
+      "critique": "依赖内部训练材料与教师，高延迟区间仍输给部分大模型",
+      "method": "在交错的源文和译文历史上同时预测读取与输出动作",
+      "innovation": "使普通平行文本可监督前缀翻译和读写时机，推理共用单条缓存",
+      "training": "先用内部多语平行文本监督微调，再在学生前缀上蒸馏",
+      "results": "三个基准低至中等延迟下改善质量与延迟的折衷",
+      "recommendation": "为实时智能体分离前缀决策与完整答案质量",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28103",
+      "decision": "drop",
+      "tags": [],
+      "reason": "蜂群更新规则直接沿用，232道题只用一个模型，内部自测场景与现有编排相近；官方测试可见的条件主要检验理想评分信号，架构新意和独立证据低于入选工作。"
+    },
+    {
+      "arxivId": "2611.28148",
+      "decision": "drop",
+      "tags": [
+        "协作编排"
+      ],
+      "reason": "把单步可归责性与领域外拒答纳入统一协作协议。算术规则和专家可靠性均受控，测试链交易不能证明开放市场有效。按新意、影响力、证据和受众匹配度分别评为2、2、1、1，综合优先级低于本期入选论文。"
+    },
+    {
+      "arxivId": "2611.28170",
+      "decision": "drop",
+      "tags": [
+        "语言博弈"
+      ],
+      "reason": "区分看懂对手后如何重排候选策略与真正改变行动的作用。在线无法对同一对手与状态重放两种策略。按新意、影响力、证据和受众匹配度分别评为1、2、1、2，综合优先级低于本期入选论文。"
+    },
+    {
+      "arxivId": "2611.28173",
+      "decision": "keep",
+      "tags": [
+        "选择性核验"
+      ],
+      "authorsOrg": "Ramesh Krishnamaneni, Muralidhar Kurni（IBM；Anantha Lakshmi Institute of Technology & Sciences）",
+      "summary": "智能体投票一致时也可能需要复核。共享失败中个体错误率为90%时，查接近票的错误率为9.98%，高于随机查的9.41%。",
+      "critique": "共享失败率和核验器准确率为假设，未用实际代理行为估计",
+      "method": "精确枚举九票聚合中的独立错误与共享失败，固定复核预算比较不同策略",
+      "innovation": "揭示共因错误严重时，用票差挑复核对象会失效",
+      "training": "无训练；合成二元投票与四个框架的文档审查",
+      "results": "共享失败中个体错误率为90%时，查接近票的错误率为9.98%，高于随机查的9.41%",
+      "recommendation": "把共同证据来源的相关错误纳入复核预算设计",
+      "direction": "多智能体与协作",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 1,
+        "total": 6
+      }
+    },
+    {
+      "arxivId": "2611.28197",
+      "decision": "keep",
+      "tags": [
+        "工程智能体"
+      ],
+      "authorsOrg": "Changyu Du, Stavros Nousias, Syed Salman Ahmed, Kai Dietmair, Mohammad Alrabab'h, André Borrmann（当前可读正文未确认机构）",
+      "summary": "贴合点云还不足以重建可用的工程模型。领先代理五厘米覆盖率96%，构件交并比63%，全工程检查通过的场景比例最高38%。",
+      "critique": "部分扫描为专有数据，语义缺件还需要参考或独立验证信号",
+      "method": "让编码代理测量扫描点云、操作建模内核并用残差迭代，另比较异步协作",
+      "innovation": "把几何覆盖、构件语义和工程约束分成独立观测",
+      "training": "无训练；128个现场场景与专家参考模型，共1028次重建",
+      "results": "领先代理五厘米覆盖率96%，构件交并比63%，全工程检查通过的场景比例最高38%",
+      "recommendation": "为生成式工程系统设置多层验收",
+      "direction": "Agent系统与工具使用",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28202",
+      "decision": "keep",
+      "tags": [
+        "实时控制"
+      ],
+      "authorsOrg": "Mark Zhao, Pengcheng Wang, Rui Yang, Jiarui Yao, Xirui Jiang, Yuxi Chen, Bingxuan Li, Hanyang Chen, Ke Yang, Manling Li, Tong Zhang, Huan Zhang（当前可读正文未确认机构）",
+      "summary": "让视觉智能体在下一次推理前继续行动。同预算实时成功率从38.3%升至68.6%；达到对照最终成功率时接口成本约五分之一。",
+      "critique": "能写控制器且读屏反馈足够清晰的游戏更适用，尚未验证物理环境",
+      "method": "模型按需触发单步动作、开环宏或读屏闭环控制器，并由控制器交还控制",
+      "innovation": "将模型调用频率与动作刷新频率解耦，并设置冻结时钟对照",
+      "training": "无训练；120款浏览器游戏及另一游戏基准",
+      "results": "同预算实时成功率从38.3%升至68.6%；达到对照最终成功率时接口成本约五分之一",
+      "recommendation": "为实时代理明确控制层时间尺度与交接边界",
+      "direction": "Agent系统与工具使用",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 3,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 9
+      }
+    },
+    {
+      "arxivId": "2611.28239",
+      "decision": "keep",
+      "tags": [
+        "自生成训练"
+      ],
+      "authorsOrg": "Chengjun Pan, Shichun Liu, Zekai Zhou, Shihan Dou, Jiahang Lin, Chengsong Huang, Dingwei Zhu, Tao Gui（当前可读正文未确认机构）",
+      "summary": "让金融建模训练从可执行挑战中生长。两套留出整题成功率分别由22.73%至29.09%、13.13%至19.19%。",
+      "critique": "只展示单轮和单骨干，不支持长期递归持续提升",
+      "method": "同一个模型自建并演化表格建模任务，再利用执行反馈训练",
+      "innovation": "将规格问题的排查与任务难度演化接入同一闭环",
+      "training": "二百七十亿参数模型完成一轮任务生成和学习",
+      "results": "两套留出整题成功率分别由22.73%至29.09%、13.13%至19.19%",
+      "recommendation": "借鉴可执行奖励与规范检查的搭配",
+      "direction": "应用与基准",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 1,
+        "total": 6
+      }
+    },
+    {
+      "arxivId": "2611.28244",
+      "decision": "keep",
+      "tags": [
+        "研究智能体"
+      ],
+      "authorsOrg": "Kelvin Kiu-Wai Tam, Newt Hue-Nam K. Nguyen, Tianshi Zheng, Yunxiang Mo, Weihan Li, Zhongwei Xie, Chiu Yeung Tang, Jui-Yu Ho, Yangqiu Song, Ginny Y. Wong, Simon See（当前可读正文未确认机构）",
+      "summary": "自动研究智能体该如何保留试验记录。上下文折叠六组均胜过近期截断，最高相对提升19.2%；最终组合在轻量竞赛中获牌率72.7%。",
+      "critique": "结论依赖可执行反馈的编码任务，且最高相对收益与平均收益不同",
+      "method": "在统一运行框架分别替换上下文与技能记忆模块，比较折叠、滚动压缩及技能删减",
+      "innovation": "将每次尝试折叠成可分别回查的档案，并按使用情况淘汰低价值经验",
+      "training": "无参数训练；三个骨干跨机器学习竞赛和内核生成",
+      "results": "上下文折叠六组均胜过近期截断，最高相对提升19.2%；最终组合在轻量竞赛中获牌率72.7%",
+      "recommendation": "为长任务的记忆策略建立对照与检索验收",
+      "direction": "Agent系统与工具使用",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 3,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 9
+      }
+    },
+    {
+      "arxivId": "2611.28285",
+      "decision": "drop",
+      "tags": [],
+      "reason": "双循环与固定大小状态是明确设计，但论文给出的是拟议训练和评估计划，没有显示相对完整历史缓存的经验收益，证据维度不足。"
+    },
+    {
+      "arxivId": "2611.28293",
+      "decision": "drop",
+      "tags": [],
+      "reason": "同一提示优化器服务情绪标注与标签分类，但情绪参考由模型生成而非人工核验，提示改写方法增量有限，也未测试学习效果。"
+    },
+    {
+      "arxivId": "2611.28295",
+      "decision": "keep",
+      "tags": [
+        "多模态检索"
+      ],
+      "authorsOrg": "Yiyu Qian, Xing Wu（当前可读正文未确认机构）",
+      "summary": "沿证据图寻找散落在科研论文里的信息。图传播与缺项补查有助于恢复分散证据，输入量低于广泛读图方案。",
+      "critique": "证据召回指标与抽取准确率需要分别观察，领域迁移仍有限",
+      "method": "将待抽字段、段落、图与图衍生描述连成图，从直接匹配段落向邻居扩展，缺项再补查",
+      "innovation": "仅为筛中的图触发视觉处理，并按字段组合证据",
+      "training": "不更新模型参数；比较直接检索、图传播与缺项补查",
+      "results": "图传播与缺项补查有助于恢复分散证据，输入量低于广泛读图方案",
+      "recommendation": "把图像处理开销分配到确实需要视觉证据的字段",
+      "direction": "RAG与知识检索",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 1,
+        "total": 6
+      }
+    },
+    {
+      "arxivId": "2611.28298",
+      "decision": "keep",
+      "tags": [
+        "组合泛化"
+      ],
+      "authorsOrg": "Alex L. Zhang, Souradip Chakraborty, Omar Khattab（当前可读正文未确认机构）",
+      "summary": "递归调用让短任务训练迁移到长任务。短任务训练迁移到长二至六十四倍的输入；对照基础模型提升更小。",
+      "critique": "跨域收益依赖共享分解结构，子调用本身也要能求解",
+      "method": "将长上下文放到外部，由主模型编程分解任务并调用更短的子问题",
+      "innovation": "用容易生成的合成替身环境训练局部调用和可组合的分解策略",
+      "training": "在短任务、构造环境及共享分解结构的任务间做强化学习迁移",
+      "results": "短任务训练迁移到长二至六十四倍的输入；对照基础模型提升更小",
+      "recommendation": "用局部输入分布设计训练任务，而非复刻完整生产环境",
+      "direction": "LLM推理与规划",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 3,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 9
+      }
+    },
+    {
+      "arxivId": "2611.28314",
+      "decision": "keep",
+      "tags": [
+        "模型安全"
+      ],
+      "authorsOrg": "Ivan Brugere, Junqi Jiang, Saumitra Mishra, Sumitra Ganesh（当前可读正文未确认机构）",
+      "summary": "让模型拒答对内部表征改动更稳健。八个骨干平均综合指标居首，同时报告连贯性、过度拒绝与常识能力。",
+      "critique": "线性拒答表征假设及综合指标权重限制外推",
+      "method": "以低秩适配减少有害与良性输入在拒答方向上的可分性，并用行为约束保留能力",
+      "innovation": "对防御进行跨模型和跨设置检查，同时考察副作用",
+      "training": "八个模型、六种防御基线和五类测试设置，使用低秩训练",
+      "results": "八个骨干平均综合指标居首，同时报告连贯性、过度拒绝与常识能力",
+      "recommendation": "用保效用的多指标设计评估模型防御",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28324",
+      "decision": "keep",
+      "tags": [
+        "研究智能体"
+      ],
+      "authorsOrg": "Yanlin Fei, Lei Li, Shaolong Chen, Nazhou Liu, Xinmiao Yu, Madalina Ciobanu, Navan Preet Singh, Qingqing Mao, Ritankar Das（当前可读正文未确认机构）",
+      "summary": "把独立复算接入跨周材料研究。系统六次改计划，从计算失败恢复，审计推翻一项归因过强的说法。",
+      "critique": "单课题个案、限定晶面及覆盖率，成本较高",
+      "method": "预检、持久研究档案、异构代理讨论和定点人工审查共同驱动模拟",
+      "innovation": "在长周期轨迹中把审计结果纳入研究计划修订",
+      "training": "无参数训练；单一铜锌表面偏析课题，约千卡时和50次生产级计算",
+      "results": "系统六次改计划，从计算失败恢复，审计推翻一项归因过强的说法",
+      "recommendation": "用相互独立的计算与审阅约束自动研究结论",
+      "direction": "Agent系统与工具使用",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28341",
+      "decision": "keep",
+      "tags": [
+        "工具可靠性"
+      ],
+      "authorsOrg": "Gün Kaynar, Boshen Yan, Carl Kingsford（当前可读正文未确认机构）",
+      "summary": "工具少返回数据时，智能体为何会编造答案。监督器将正确恢复率从45.6%提至56.3%，编造从17.3%降至10.8%。",
+      "critique": "在确定性沙箱和受控任务内验证，不能直接外推到动态服务",
+      "method": "在可核对真值的沙箱注入受控故障，用结构化工具结果让监督器发纠偏指令",
+      "innovation": "区分明确报错与部分结果被静默采纳的失败路径",
+      "training": "无训练；30个多步任务、8种工具、9类故障、2100次带故障运行",
+      "results": "监督器将正确恢复率从45.6%提至56.3%，编造从17.3%降至10.8%",
+      "recommendation": "为工具层增加返回完备性检验并单独计量诚实失败",
+      "direction": "评测与安全",
+      "codeUrl": "https://github.com/Kingsford-Group/RetryRealistic",
+      "score": {
+        "novelty": 2,
+        "impact": 3,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 9
+      }
+    },
+    {
+      "arxivId": "2611.28348",
+      "decision": "keep",
+      "tags": [
+        "任务编排"
+      ],
+      "authorsOrg": "Qinghua Liu, Junpeng Wang, Mingzhi Hu, Menghai Pan, Shubham Jain, Yuzhong Chen, Yan Zheng, Yiwei Cai, John Paparrizos（当前可读正文未确认机构）",
+      "summary": "先把异常写成可检验目标，再自动挑检测器。相较最强基线单变量和多变量分别改善11.5%与9.6%。",
+      "critique": "人工合成异常未必与真实故障一致",
+      "method": "由语义契约定义异常模式与响应，用合成干预核验代理提出的检测流水线",
+      "innovation": "无标签时用与异常语义匹配的局部干预指导迭代和集成",
+      "training": "多来源单变量和多变量数据，调用模型提议流水线，不更新检测代理权重",
+      "results": "相较最强基线单变量和多变量分别改善11.5%与9.6%",
+      "recommendation": "把目标语义和可执行验证组合成代理的反馈信号",
+      "direction": "应用与基准",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 1,
+        "total": 6
+      }
+    },
+    {
+      "arxivId": "2611.28349",
+      "decision": "keep",
+      "tags": [
+        "推理解码"
+      ],
+      "authorsOrg": "John Zhang, Silky Arora（当前可读正文未确认机构）",
+      "summary": "让解码器提前填入结构化输出的必然片段。单请求解码加速2.66至2.81倍，64批时为1.14至1.70倍。",
+      "critique": "规范化切词会改变采样分布，混跑普通文字可能掉速",
+      "method": "把语法强制的片段并入推测解码提案，对唯一合法续接直接接收",
+      "innovation": "用约束引擎作为第二个草稿来源，跳过确定位置的打分",
+      "training": "无需训练；两套服务实现，比较三类草稿器与不同批大小",
+      "results": "单请求解码加速2.66至2.81倍，64批时为1.14至1.70倍",
+      "recommendation": "判断工具输出的格式确定性是否足以抵销调度开销",
+      "direction": "LLM推理与规划",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28356",
+      "decision": "keep",
+      "tags": [
+        "智能体记忆"
+      ],
+      "authorsOrg": "Huanran Li, Nhat X.T. Le, Kevin De Angeli, Yao Xuan, Alireza Vahdatpour, Djordje Gligorijevic（当前可读正文未确认机构）",
+      "summary": "在调参的三个决策点调取不同的经验。达到无记忆对照第32次试验的水平时所需试验减少47%。",
+      "critique": "两个内部模型和有限轮数，跨业务普适性未证实",
+      "method": "把过去试验、假设和理由关联，在开局、生成假设和审阅候选时检索，离线提炼经验",
+      "innovation": "从相似结果检索转为依据因果解释判断跨模型适用性",
+      "training": "无参数训练；两套广告模型、八个对照组，每组五轮",
+      "results": "达到无记忆对照第32次试验的水平时所需试验减少47%",
+      "recommendation": "区分何时应该检索配方、类似会话和具体失败案例",
+      "direction": "Agent系统与工具使用",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28359",
+      "decision": "keep",
+      "tags": [
+        "对比蒸馏"
+      ],
+      "authorsOrg": "Zhibo Hou, Fan Zhao, Yiping Li, Zhiyu An, Wan Du（当前可读正文未确认机构）",
+      "summary": "较弱教师也能帮助学生学会推理。数学十六次采样至少一次成功的指标较最强基线最多提升7.51个百分点。",
+      "critique": "附加教师增大训练成本，弱教师怎样挑仍需按任务判断",
+      "method": "在同一学生生成前缀上对照强教师、弱教师和学生的预测",
+      "innovation": "将弱教师典型的选择转为反面信号，保留强教师的正向信号",
+      "training": "不同规模和家族的教师学生组合，覆盖数学、指令与弃答问答",
+      "results": "数学十六次采样至少一次成功的指标较最强基线最多提升7.51个百分点",
+      "recommendation": "让教师选择考虑差异信息与可教性",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28368",
+      "decision": "keep",
+      "tags": [
+        "持续评测"
+      ],
+      "authorsOrg": "Martyna Plomecka, Yao Yan, DJ Sterling, Jon Lipovetz, John Schultz, Michael Aaron, Chiamaka Chukwuka, Will Cukierski, Christopher D'Mello, Bovard Doerschuk-Tiberi, Robert Fraser, Ian Gemp, Yuting Han, Addison Howard, Oran Kelly, Siqi Liu, Jeff Moser, Meghan O'Connell, Jun Peng, Laurel Prince, Meg Risdal, Jonathan Ward, Domino Weir, Marc Lanctot（当前可读正文未确认机构）",
+      "summary": "持续更新的游戏榜单该如何节省对局。调度器将对局集中在尚未定序的模型对，跨游戏均衡避免高产游戏支配总榜。",
+      "critique": "综合排名依赖所选游戏及其构念覆盖，不能由大量场次自动消除",
+      "method": "以成对强弱估计的不确定性分配场次，按游戏均衡汇总并标注技能需求",
+      "innovation": "将算力分配、异质计分和能力覆盖整合为更新流程",
+      "training": "无训练；39个模型、10款游戏，累计147015局",
+      "results": "调度器将对局集中在尚未定序的模型对，跨游戏均衡避免高产游戏支配总榜",
+      "recommendation": "为需要持续加模型的基准划定刷新成本和能力覆盖",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28369",
+      "decision": "keep",
+      "tags": [
+        "因果训练"
+      ],
+      "authorsOrg": "Devansh Arpit（当前可读正文未确认机构）",
+      "summary": "用干预数据减少下一词预测对捷径的依赖。分布变动时改善泛化，常规训练在相同合成设定仍受伪相关影响。",
+      "critique": "因果充分性与有效反事实难以在开放文本中核实",
+      "method": "构造已知生成关系的世界模型，用反事实视图和一致性约束训练",
+      "innovation": "将因果相关输入的可辨识条件连接到训练目标",
+      "training": "主要为合成世界模型，另有自然语言问答概念验证",
+      "results": "分布变动时改善泛化，常规训练在相同合成设定仍受伪相关影响",
+      "recommendation": "用受控数据检验模型是否只是学会位置和共现捷径",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28371",
+      "decision": "drop",
+      "tags": [],
+      "reason": "开放账本保留了自我否证与修正规则，最终为9/79，但只有一个平台的一次裁决，激励变化的因果机制未经对照，证据强度较低。"
+    },
+    {
+      "arxivId": "2611.28374",
+      "decision": "keep",
+      "tags": [
+        "项目记忆"
+      ],
+      "authorsOrg": "Jiexin Ding, Lin Ai, Adam Davies, Scott Counts（当前可读正文未确认机构）",
+      "summary": "企业智能体需要理解某个时刻的项目状态。检索与抽取构成主要差距；给定正确证据后再提供显式状态仍带来收益。",
+      "critique": "离线问答和所构造的项目史覆盖有限，未测真实滚动部署",
+      "method": "将协作资料重建为带时间和角色视角的可追溯状态，再设计未结事项、变化和可见性差距三类问题",
+      "innovation": "把拿到证据和从证据重建当时状态拆成两个评测条件",
+      "training": "无模型训练；30段项目历史，1573道题，比较检索、长上下文及理想信息条件",
+      "results": "检索与抽取构成主要差距；给定正确证据后再提供显式状态仍带来收益",
+      "recommendation": "设计企业记忆时分别评估跨源召回、状态汇合与权限视角",
+      "direction": "RAG与知识检索",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28383",
+      "decision": "keep",
+      "tags": [
+        "行为模拟"
+      ],
+      "authorsOrg": "Adolfo Ignacio Fuentes-Jofre, Cristian Candia（当前可读正文未确认机构）",
+      "summary": "合成受访者的分歧远小于真实人群。主要对照中合成个体间方差为人类的0.4%至10.5%，换提示虽能改变政治结构但压缩仍在。",
+      "critique": "只覆盖配对政策题，不能推断参与者的其他行为",
+      "method": "让三个开放模型家族重放智利、法国及巴西的配对政策选择，对调顺序并改变量尺描述",
+      "innovation": "分别量化个体一致性、偏好空间离散程度和政治结构",
+      "training": "无训练；三国调查及跨提示条件重估",
+      "results": "主要对照中合成个体间方差为人类的0.4%至10.5%，换提示虽能改变政治结构但压缩仍在",
+      "recommendation": "给合成社会模拟增加人口差异和提示扰动诊断",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 1,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28420",
+      "decision": "keep",
+      "tags": [
+        "组合搜索"
+      ],
+      "authorsOrg": "Navapat Nananukul, Mayank Kejriwal（当前可读正文未确认机构）",
+      "summary": "共享失败日志让小模型接力改写程序。测试误差比成员平均低25.4%，相对七百亿参数对照低16.7%。",
+      "critique": "结论受模型选择、竞赛环境及成本口径影响",
+      "method": "多个小模型共享记忆和失败记录，每轮执行候选并保留最优",
+      "innovation": "让不同模型在相同历史上提供互补候选，而不是独立并行到底",
+      "training": "冻结五个八十至一百二十亿参数模型，比较22个竞赛任务",
+      "results": "测试误差比成员平均低25.4%，相对七百亿参数对照低16.7%",
+      "recommendation": "配置代码搜索时比较同成本的异质组合和单大模型",
+      "direction": "多智能体与协作",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28441",
+      "decision": "keep",
+      "tags": [
+        "人工审核"
+      ],
+      "authorsOrg": "Rocker D'Antonio, Harry Xie（当前可读正文未确认机构）",
+      "summary": "让现场处置反馈回流到运维手册。平均恢复时间呈下降趋势，但文档修订与代理干预之间未建立明确因果关系。",
+      "critique": "单机构观察，处置难度和同期变化可混杂趋势",
+      "method": "支持代理使用手册和工具辅助处置，事后建议修订，由人审查",
+      "innovation": "在已有手册上闭合操作、结果和文档维护回路",
+      "training": "无训练；17周、232起生产事件的观察记录",
+      "results": "平均恢复时间呈下降趋势，但文档修订与代理干预之间未建立明确因果关系",
+      "recommendation": "为运维文档设计可审计的人工反馈入口",
+      "direction": "Agent系统与工具使用",
+      "codeUrl": "",
+      "score": {
+        "novelty": 1,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 6
+      }
+    },
+    {
+      "arxivId": "2611.28445",
+      "decision": "keep",
+      "tags": [
+        "多轮蒸馏"
+      ],
+      "authorsOrg": "Yuwei Zhang, Ian Miao, Wentao Zhang, Chen Qu, Bill Bi, Jingbo Shang, Donna Schut（论文注明第一与第三作者在 Google 期间完成工作）",
+      "summary": "蒸馏时隐藏学生推理，减少多轮智能体的输出。两个知识工作基准的每轮任务输出分别比常规方法少57%和53%，表格一次通过率高4.8个百分点。",
+      "critique": "收益依赖推理可单独标记的框架和所在任务，离线评测未等价于延迟",
+      "method": "让教师评估学生行动时看外部轨迹而屏蔽学生的思考文本",
+      "innovation": "将行为监督和教师对学生思路的延续倾向拆开",
+      "training": "较大冻结教师监督四十亿、九十亿与二百七十亿参数学生的在策略轨迹",
+      "results": "两个知识工作基准的每轮任务输出分别比常规方法少57%和53%，表格一次通过率高4.8个百分点",
+      "recommendation": "在蒸馏的接口层检查教师看到的上下文是否奖励冗长",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 3,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 9
+      }
+    },
+    {
+      "arxivId": "2611.28477",
+      "decision": "drop",
+      "tags": [],
+      "reason": "六个地球系统仓库的60项物理代码修改有参考补丁和审计价值，但主要证据来自产物验证，少数识别器夹具还会接受不可应用补丁，覆盖面和评测成熟度低于同类入选工作。"
+    },
+    {
+      "arxivId": "2611.28482",
+      "decision": "drop",
+      "tags": [],
+      "reason": "以激活引导拟合五大人格测量有增量价值，但收益只在量表误差上衡量，未证实任何下游行为逼真度，受众匹配和证据较弱。"
+    },
+    {
+      "arxivId": "2611.28517",
+      "decision": "drop",
+      "tags": [],
+      "reason": "传播特征用于振荡器和收缩共识的数字孪生，改动优劣来自合成动力学模拟，未连接语言模型代理的行为或工具任务。"
+    },
+    {
+      "arxivId": "2611.28519",
+      "decision": "keep",
+      "tags": [
+        "多跳检索"
+      ],
+      "authorsOrg": "Zhexi Gu（当前可读正文未确认机构）",
+      "summary": "用逐跳原句给多步检索答案加权。多跳测试一项达到63.0的综合分，先前二百亿参数方案为59.2，同阅读模型下五套测试领跑所列对照。",
+      "critique": "多次执行增加推理开销，找到引句仍不保证引用支持所绑定实体",
+      "method": "把问题拆成检索跳，每步绑原句，再按执行轨迹可靠性对同答案累加支持并择机停",
+      "innovation": "把证据链质量作为多次执行的合并依据",
+      "training": "九十亿参数阅读模型冻结，用100道已答题拟合可靠性预测",
+      "results": "多跳测试一项达到63.0的综合分，先前二百亿参数方案为59.2，同阅读模型下五套测试领跑所列对照",
+      "recommendation": "给小模型检索系统增加可查证的置信依据并设置提前停机",
+      "direction": "RAG与知识检索",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28542",
+      "decision": "keep",
+      "tags": [
+        "代码评测"
+      ],
+      "authorsOrg": "Davin Hill, Pawan Chorasiya, Bhawani S. Leelar, Oren Avram, Robert E. Tillman, Tamer Soliman（当前可读正文未确认机构）",
+      "summary": "用同一道分析题比较查询语言和数据框代码。9个系统中8个查询语言执行准确率更高，专家式提示通常同时帮助两类输出。",
+      "critique": "题目来自同一基准家族，改写未必覆盖用户真实措辞",
+      "method": "将同语义的查询和数据框解法配对，操纵初学者与专家措辞及结构说明",
+      "innovation": "把用户表达方式和输出范式做成可控变量",
+      "training": "无训练；1534道题、9个模型，逾24万次评测",
+      "results": "9个系统中8个查询语言执行准确率更高，专家式提示通常同时帮助两类输出",
+      "recommendation": "在同语义条件下验证自然语言数据接口的输出选择",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28548",
+      "decision": "drop",
+      "tags": [],
+      "reason": "四领域动作评估统一为视频问答是明确数据贡献，但主要解决视频动作评分，模型侧为常规联合微调，通用智能体读者优先级偏低。"
+    },
+    {
+      "arxivId": "2611.28558",
+      "decision": "keep",
+      "tags": [
+        "视觉工具训练"
+      ],
+      "authorsOrg": "Jin Cui, Xinyue Long, Jiepeng Zhou, Boran Zhao, Pengju Ren, Hao Dong（当前可读正文未确认机构）",
+      "summary": "给模型多练那些确实能靠视觉工具解开的题。多个视觉任务上较工具强化学习对照有收益。",
+      "critique": "观测增益来自可检验答案与预置工具集合，开放任务的归因仍难",
+      "method": "反事实比较在相同思维状态下补上视觉证据前后的成功概率；随训练重估并调整题型配比",
+      "innovation": "用数据选择替换按工具调用发放的特殊奖励",
+      "training": "工具含放大、文字识别和图表解析，强化学习仅奖励最终答案",
+      "results": "多个视觉任务上较工具强化学习对照有收益",
+      "recommendation": "以证据对正确率的边际贡献来决定工具训练样本",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28564",
+      "decision": "keep",
+      "tags": [
+        "工具能力内化"
+      ],
+      "authorsOrg": "Jin Cui, Hao Dong, Xinyue Long, Boran Zhao, Pengju Ren（当前可读正文未确认机构）",
+      "summary": "在训练中逐步撤去视觉工具。比无特殊支架的强化学习在感知、推理和通用理解上分别提升5.7%、4.8%和4.4%。",
+      "critique": "视觉编码里本来丢失的信息不能依靠内化恢复",
+      "method": "先练有工具的求解与结果预测，强化学习中分工具逐渐撤掉外部调用，并让真实结果蒸馏人工观测",
+      "innovation": "把视觉工具变成逐渐退出的训练支架",
+      "training": "十三套基准，包含匹配数据的普通强化学习基线",
+      "results": "比无特殊支架的强化学习在感知、推理和通用理解上分别提升5.7%、4.8%和4.4%",
+      "recommendation": "区分训练时有用和上线时必须保留的工具",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28565",
+      "decision": "drop",
+      "tags": [],
+      "reason": "按学生解题路径评分是有意义的课程应用，但提示与量规的工程组合新意有限，实际可靠使用还依赖同课程人工核核，跨课程证据不足。"
+    },
+    {
+      "arxivId": "2611.28573",
+      "decision": "drop",
+      "tags": [],
+      "reason": "冻住视觉模型，用症状描述检索带病名的示例有应用价值，但主要是作物病害评测，领域专属记忆的外部泛化和通用方法新意有限。"
+    },
+    {
+      "arxivId": "2611.28574",
+      "decision": "keep",
+      "tags": [
+        "视觉记忆"
+      ],
+      "authorsOrg": "Xinyu Cao, Tianjie Ju, Zhuosheng Zhang（当前可读正文未确认机构）",
+      "summary": "用可改写的视觉记忆应对探索后的未知问题。保留视觉路径与保留修订经验均有贡献，纯文本描述会丢失相关细节。",
+      "critique": "环境规则与视觉操作受任务约束，任意开放场景未验证",
+      "method": "保存图像并对像素操作，冻结模型分析轨迹后重写记忆程序和修订工具",
+      "innovation": "把存储、检索技能与跨代修订共同表示为可执行程序",
+      "training": "无参数训练；在延迟提问的视觉环境上跨代改写并做路径消融",
+      "results": "保留视觉路径与保留修订经验均有贡献，纯文本描述会丢失相关细节",
+      "recommendation": "把记忆丢失定位到可独立修改的程序步骤",
+      "direction": "Agent系统与工具使用",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28586",
+      "decision": "drop",
+      "tags": [
+        "测试时搜索"
+      ],
+      "reason": "把语言表达不同但功能相同的步骤合并，给过程信号去重。选择题基准与离线生成链不代表临床推理，错误聚类可抹掉关键差异。按新意、影响力、证据和受众匹配度分别评为2、2、1、1，综合优先级低于本期入选论文。"
+    },
+    {
+      "arxivId": "2611.28610",
+      "decision": "keep",
+      "tags": [
+        "支付评测"
+      ],
+      "authorsOrg": "Zhe Chen, Emma Hsieh, Vicky Fu（当前可读正文未确认机构）",
+      "summary": "让智能体花钱的能力可以怎么测。三个模型完成79项支付任务无预算或支付错误，九个模型至少一次接受有问题报价。",
+      "critique": "限于信息购买场景，不能代表长期支出和不同供应商环境",
+      "method": "连起卖家报价、授权、结算和最终研究输出，分开评估是否守约及购买价值",
+      "innovation": "把支付正确率与买回信息的实际用途分开",
+      "training": "无训练；12个模型、80项模拟卖家任务与76项实时数据问答，使用真实小额结算",
+      "results": "三个模型完成79项支付任务无预算或支付错误，九个模型至少一次接受有问题报价",
+      "recommendation": "重放报价、预算和结果三条记录衡量授权风险",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28612",
+      "decision": "keep",
+      "tags": [
+        "多模态稳健性"
+      ],
+      "authorsOrg": "Yifei Cheng, Xiaolin Zhang, Yu-Xuan Qiu（当前可读正文未确认机构）",
+      "summary": "让选项和图像换序后更少改变答案。共享位置降低扰动，蒸馏能追回一部分结构改动损失。",
+      "critique": "某些输入的次序本身有语义，不适合做等价置换",
+      "method": "以共享位置和可控跨项注意力处理顺序，再从冻结的原模型蒸馏注意力",
+      "innovation": "同时考虑文本选项和多模态输入换序，并显式恢复预测能力",
+      "training": "对多类排列情境和结构消融测试，蒸馏只更新注意力",
+      "results": "共享位置降低扰动，蒸馏能追回一部分结构改动损失",
+      "recommendation": "为无序输入设计从结构变化到能力恢复的测量",
+      "direction": "LLM推理与规划",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28613",
+      "decision": "keep",
+      "tags": [
+        "参数记忆"
+      ],
+      "authorsOrg": "Xianxuan Long, Xinnan Dai, Kai Guo, Jiliang Tang（当前可读正文未确认机构）",
+      "summary": "训练经历怎样影响模型记住可复用规则。引入更多行动类型可妨碍共同规则习得，经历结构影响规则复用。",
+      "critique": "任务规则均可明确形式化，开放世界中的有效状态可能难定义",
+      "method": "用有限状态转移描述任务规则，在匹配条件下改变行动类型宽度和经历深度",
+      "innovation": "对比规则不变时，训练材料组织如何改变规则内化",
+      "training": "涵盖合成世界、经典规划和代码执行的受控训练",
+      "results": "引入更多行动类型可妨碍共同规则习得，经历结构影响规则复用",
+      "recommendation": "为训练数据拆解行动多样性和重复深度的独立作用",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28617",
+      "decision": "keep",
+      "tags": [
+        "数据核验"
+      ],
+      "authorsOrg": "Saeid Rajabi, Chengmo Yang, Satwik Patnaik（当前可读正文未确认机构）",
+      "summary": "让硬件代码训练数据经过逐级可执行验证。其中一个语料约28%未通过综合，另有综合后变成空电路的设计。",
+      "critique": "形式等价依赖规格与参考接口，仍可能漏过用户意图",
+      "method": "由代理改写规格，用综合和形式等价工具验收，保留失败负例",
+      "innovation": "用工程验收逐级约束规格和代码的一致性",
+      "training": "两个开源硬件代码语料，分级构造指令及可验证样例",
+      "results": "其中一个语料约28%未通过综合，另有综合后变成空电路的设计",
+      "recommendation": "为可执行训练数据保留失败类型以支持改进",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    },
+    {
+      "arxivId": "2611.28618",
+      "decision": "keep",
+      "tags": [
+        "样本效率"
+      ],
+      "authorsOrg": "Siyu Zhou, Jing Jiang, Chengqi Zhang, Guodong Long（当前可读正文未确认机构）",
+      "summary": "从极少视觉交互轨迹蒸馏操作能力。四条历史使标准导航从49.17%升至82.08%，推箱从60.16%升至85.55%。",
+      "critique": "迁移主要局限到相关环境与技能，不能推断通用视觉操作仅需四条轨迹",
+      "method": "按技能与视觉决策覆盖挑轨迹，比较新鲜互动与固定历史上重采样的在策略蒸馏",
+      "innovation": "固定环境历史还能训练学生自己的新响应",
+      "training": "四十亿参数学生向二百七十亿参数教师学习，测试导航、推箱和空间地图",
+      "results": "四条历史使标准导航从49.17%升至82.08%，推箱从60.16%升至85.55%",
+      "recommendation": "拆开记录轨迹的成本与产生新学生动作的成本",
+      "direction": "LLM训练与对齐",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28638",
+      "decision": "keep",
+      "tags": [
+        "长上下文"
+      ],
+      "authorsOrg": "Qingsen Ma, Dianyun Wang, Jiahong Liu, Irwin King（当前可读正文未确认机构）",
+      "summary": "让检索阅读模型不再押注证据位置。平均准确率与最差位置准确率均改善，同条件胜过位置蒸馏基线。",
+      "critique": "设定突出单个关键文档，复杂多证据任务还需验证",
+      "method": "将相关证据均匀放入不同位置、随机排列干扰项，并用模型仅看正确材料的输出做自蒸馏",
+      "innovation": "使位置在训练中不提供正确答案线索，并考察最坏位置",
+      "training": "六个模型，数千样本训练小型适配器，无需金标准答案",
+      "results": "平均准确率与最差位置准确率均改善，同条件胜过位置蒸馏基线",
+      "recommendation": "通过操纵训练位置分布削弱检索系统中的捷径",
+      "direction": "RAG与知识检索",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28640",
+      "decision": "keep",
+      "tags": [
+        "模型防御"
+      ],
+      "authorsOrg": "Chengzhong Wang, Lang Lin, Shengfang Zhai, Chenru Wang, Daniel Yiming Cao, Sheng-Yen Chou, Jiaheng Zhang, Pin-Yu Chen, Shengwei An（当前可读正文未确认机构）",
+      "summary": "用遮盖敏感性检查扩散语言模型的后门。两类信号互补，论文报告可检测并缓解所测试的后门现象。",
+      "critique": "依赖参考模型及后门假设，对未见形态的稳健性仍未知",
+      "method": "结合遮盖前后预测变化和参考模型对疑似异常词的判断，定位后做模型修复",
+      "innovation": "将掩码扩散模型的局部可干预性转成防御信号",
+      "training": "实验比较检测、定位与修复，分别消融两类信号",
+      "results": "两类信号互补，论文报告可检测并缓解所测试的后门现象",
+      "recommendation": "区分输入检测、证据定位和模型修复三个验收目标",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28660",
+      "decision": "drop",
+      "tags": [],
+      "reason": "内部参与者影响多智能体共识值得关注；研究以针对既定目标系统训练的攻击为主，跨模型转移波动，防御和外部有效性证据较弱。"
+    },
+    {
+      "arxivId": "2611.28671",
+      "decision": "keep",
+      "tags": [
+        "系统评测"
+      ],
+      "authorsOrg": "Haoyuan Zheng, Dongting Li, Hancheng Ye, Qinsi Wang, Mingyuan Ma, Yuncheng Yao, Yifei Wang, Baijun Zhou, Zishan Shao, Tingjun Chen, Hai Helen Li, Danyang Zhuo, Yiran Chen（当前可读正文未确认机构）",
+      "summary": "多智能体工作流的排名会随运行环境改变。即使模型和提示不变，资源配置不同也会改变速度排序。",
+      "critique": "服务负载谱和资源布局有限，数值不宜跨硬件外推",
+      "method": "固定同一候选工作流与任务，跨服务底座和负载运行，同时记质量、延迟、开销和故障",
+      "innovation": "把执行环境与负载视作评测自变量，给排名变化附运行证据",
+      "training": "不训练底座；五类负载涵盖软件修复、研究综合等",
+      "results": "即使模型和提示不变，资源配置不同也会改变速度排序",
+      "recommendation": "对编排优化报告同任务、同资源和服务侧指标",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28692",
+      "decision": "drop",
+      "tags": [],
+      "reason": "710位参与者的对话模拟带来少量额外喜欢度信号，换配对控制有价值，但估计目标单一且相关性有限，通用协作系统的适用面较窄。"
+    },
+    {
+      "arxivId": "2611.28713",
+      "decision": "drop",
+      "tags": [],
+      "reason": "预注册、镜像座位和规则验证有评测价值，但在单一自制棋类游戏只比较低成本模型，主要结论无法与通用代理基准直接对照。"
+    },
+    {
+      "arxivId": "2611.28745",
+      "decision": "keep",
+      "tags": [
+        "多模态评测"
+      ],
+      "authorsOrg": "Jianxin Gao, Bohan Chen, Runze Li, Qi Zhang（当前可读正文未确认机构）",
+      "summary": "模型明明知道游戏规则，为什么仍用现实物理作答。在规则与现实冲突的主测试集，点明游戏后准确率上升8.2至19.8个百分点。",
+      "critique": "单一游戏、特定版本及问答环境限制了外部有效性",
+      "method": "用引擎验证结果，分别给出文字、明确游戏身份的图片和裸图",
+      "innovation": "将识别游戏、记得规则及主动选择规则拆开",
+      "training": "无训练；155条规则、1240道题，比较六个模型",
+      "results": "在规则与现实冲突的主测试集，点明游戏后准确率上升8.2至19.8个百分点",
+      "recommendation": "将规则提示作为诊断而非直接混入默认成绩",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28748",
+      "decision": "keep",
+      "tags": [
+        "隐私评测"
+      ],
+      "authorsOrg": "Syed Khaderi, Karima Makhlouf, Sami Zhioua（当前可读正文未确认机构）",
+      "summary": "单轮隐私结论不能直接代替多轮检索评测。输入污染过滤排除了29%至53%的原始匹配，检索能减少披露但未消除风险。",
+      "critique": "模型较旧，限定联系信息与设定的对话条件，未验证完整防御",
+      "method": "把检索、对话历史与测试条件分开，逐轮排除已出现在输入中的联系方式",
+      "innovation": "把真正来自模型参数的泄漏和输入复述分开计数",
+      "training": "三个开放自回归模型，语料先排查目标信息，在受控多轮环境比较",
+      "results": "输入污染过滤排除了29%至53%的原始匹配，检索能减少披露但未消除风险",
+      "recommendation": "将输入来源与逐回合历史显式纳入隐私测试",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 2,
+        "audienceFit": 2,
+        "total": 8
+      }
+    },
+    {
+      "arxivId": "2611.28787",
+      "decision": "keep",
+      "tags": [
+        "机构决策"
+      ],
+      "authorsOrg": "Disha Sheshanarayana, Tanishka Magar（当前可读正文未确认机构）",
+      "summary": "机构场景中多智能体讨论会改变哪些请示。角色分工没有稳定改善整体判断，单个专家有时会左右最终结论。",
+      "critique": "书面情境与角色限制无法覆盖真实机构中的权责和动态信息",
+      "method": "从事故报告构造服从、拒绝和升级情境，比较三种配置并追踪角色分歧",
+      "innovation": "把最终聚合对少数角色的依赖作为额外观察对象",
+      "training": "无训练；八个模型，场景涉及航空和应急等",
+      "results": "角色分工没有稳定改善整体判断，单个专家有时会左右最终结论",
+      "recommendation": "检查谁在分歧时有决定权及升级阈值",
+      "direction": "评测与安全",
+      "codeUrl": "",
+      "score": {
+        "novelty": 2,
+        "impact": 2,
+        "evidence": 1,
+        "audienceFit": 2,
+        "total": 7
+      }
+    }
+  ]
+}
